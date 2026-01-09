@@ -13,6 +13,9 @@
     "prisma:pull": "prisma db pull",
     "prisma:push": "prisma db push"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [
     "trip-planner",
     "express",
@@ -34,11 +37,11 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^20.14.15",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.27",
     "nodemon": "^3.1.4",
     "prisma": "^5.20.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.9.3"
   }
 }

@@ -25,7 +25,7 @@ export const getTrips = async (
     });
 
     // Convert dates and JSON fields for response
-    const formattedTrips = trips.map(trip => ({
+    const formattedTrips = trips.map((trip: any) => ({
       id: trip.id,
       title: trip.title,
       dateFrom: trip.dateFrom.toISOString().split('T')[0],

@@ -46,19 +46,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env.JWT_SECRET || '';
     if (!jwtSecret) {
       throw new Error('JWT_SECRET is not defined');
     }
 
+    const expiresIn = process.env.JWT_EXPIRES_IN || '15m';
     const token = jwt.sign(
       {
         id: user.id,
         email: user.email,
         role: user.role
-      },
-      jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+      } as object,
+      jwtSecret as jwt.Secret,
+      { expiresIn } as jwt.SignOptions
     );
 
     // Return token and user info
@@ -149,7 +150,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
  * POST /api/auth/logout
  * Logout user (for JWT this is mainly client-side, server just confirms)
  */
-export const logout = async (req: Request, res: Response): Promise<void> => {
+export const logout = async (_req: Request, res: Response): Promise<void> => {
   // For stateless JWT, logout is handled client-side by removing token
   // This endpoint exists for consistency and future token blacklisting if needed
   res.status(200).json({

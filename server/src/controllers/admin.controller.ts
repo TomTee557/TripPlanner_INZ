@@ -8,7 +8,7 @@ import { AuthenticatedRequest, UpdateUserRoleRequest, UpdateUserPasswordRequest 
  * Get all users (admin only)
  */
 export const getAllUsers = async (
-  req: AuthenticatedRequest,
+  _req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -17,7 +17,7 @@ export const getAllUsers = async (
     });
 
     // Remove passwords from response
-    const safeUsers = users.map(user => ({
+    const safeUsers = users.map((user: any) => ({
       id: user.id,
       name: user.name,
       surname: user.surname,

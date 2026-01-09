@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware (development)
 if (process.env.NODE_ENV === 'development') {
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use((req: Request, _res: Response, next: NextFunction) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
     next();
   });
@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api', apiRoutes);
 
 // Root endpoint
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.json({
     success: true,
     message: 'Trip Planner API',
@@ -56,7 +56,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Error:', err);
   
   res.status(500).json({
