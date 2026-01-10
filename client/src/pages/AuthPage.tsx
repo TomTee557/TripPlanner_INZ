@@ -1,0 +1,139 @@
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { loginRequest, registerRequest } from '@store/slices/authSlice';
+import type { RootState } from '@store';
+import '@styles/auth.scss';
+
+const AuthPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    surname: '',
+  });
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate('/app');
+    return null;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isLogin) {
+      dispatch(loginRequest({
+        email: formData.email,
+        password: formData.password,
+      }));
+    } else {
+      dispatch(registerRequest({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        surname: formData.surname,
+      }));
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  return (
+    <div className="auth">
+      <div className="auth__background"></div>
+      <div className="auth__column">
+        <div className="auth__container">
+          <div className="auth__content">
+            <img src="/src/assets/logo.png" alt="Trip Planner Logo" className="auth__logo" />
+            
+            <form className="auth__form" onSubmit={handleSubmit}>
+              <h2 className="auth__title">{isLogin ? 'Log in' : 'Register'}</h2>
+              
+              {!isLogin && (
+                <>
+                  <label htmlFor="name" className="auth__label">Name:</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    className="auth__input"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required={!isLogin}
+                  />
+                  
+                  <label htmlFor="surname" className="auth__label">Surname:</label>
+                  <input
+                    type="text"
+                    id="surname"
+                    name="surname"
+                    className="auth__input"
+                    value={formData.surname}
+                    onChange={handleChange}
+                    required={!isLogin}
+                  />
+                </>
+              )}
+              
+              <label htmlFor="email" className="auth__label">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="auth__input"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              
+              <label htmlFor="password" className="auth__label">Password:</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="auth__input"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              
+              <button 
+                type="submit" 
+                className={`auth__button ${isLogin ? 'auth__button--login' : 'auth__button--register'}`}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : (isLogin ? 'Log in' : 'Register')}
+              </button>
+              
+              <p className="auth__switch">
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <a href="#" onClick={(e) => { e.preventDefault(); setIsLogin(!isLogin); }}>
+                  {isLogin ? 'Register' : 'Log in'}
+                </a>
+              </p>
+              
+              {error && (
+                <div className="auth__message auth__message--error">
+                  {error}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AuthPage;
