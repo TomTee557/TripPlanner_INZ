@@ -72,11 +72,11 @@ const tripsSlice = createSlice({
     },
 
     // Delete trip
-    deleteTripRequest: (state, _action: PayloadAction<string>) => {
+    deleteTripRequest: (state, _action: PayloadAction<number>) => {
       state.loading = true;
       state.error = null;
     },
-    deleteTripSuccess: (state, action: PayloadAction<string>) => {
+    deleteTripSuccess: (state, action: PayloadAction<number>) => {
       state.loading = false;
       state.trips = state.trips.filter(trip => trip.id !== action.payload);
       if (state.selectedTrip?.id === action.payload) {

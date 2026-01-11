@@ -65,7 +65,7 @@ function* updateTripSaga(action: PayloadAction<UpdateTripData>) {
 }
 
 // Delete trip saga
-function* deleteTripSaga(action: PayloadAction<string>) {
+function* deleteTripSaga(action: PayloadAction<number>) {
   try {
     yield call(api.delete.bind(api), `/trips/${action.payload}`);
     yield put(deleteTripSuccess(action.payload));

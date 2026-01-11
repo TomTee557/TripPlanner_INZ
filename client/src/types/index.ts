@@ -5,6 +5,7 @@ export interface User {
   name: string;
   surname: string;
   role: 'USER' | 'ADMIN';
+  createdAt: string;
 }
 
 // Auth types
@@ -28,17 +29,17 @@ export interface AuthResponse {
 
 // Trip types
 export interface Trip {
-  id: string;
+  id: number;
   userId: number;
   title: string;
   dateFrom: string;
   dateTo: string;
   country: string;
-  tripType: string[];
-  tags: string[];
-  budget: string | null;
+  tripType: string;
+  tags: string;
+  price: number;
+  picture: string;
   description: string | null;
-  image: string | null;
   createdAt: string;
 }
 
@@ -47,15 +48,33 @@ export interface CreateTripData {
   dateFrom: string;
   dateTo: string;
   country: string;
-  tripType: string[];
-  tags: string[];
-  budget?: string;
+  tripType: string;
+  tags?: string;
+  price: number;
+  picture: string;
   description?: string;
-  image?: string;
 }
 
-export interface UpdateTripData extends Partial<CreateTripData> {
-  id: string;
+export interface UpdateTripData {
+  id: number;
+  title?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  country?: string;
+  tripType?: string;
+  tags?: string;
+  price?: number;
+  picture?: string;
+  description?: string;
+}
+
+export interface TripFilters {
+  title?: string;
+  country?: string;
+  tripTypes?: string[];
+  tags?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 // API Response types

@@ -1,0 +1,117 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &--primary {
+    background-color: #007bff;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+  }
+  
+  &--secondary {
+    background-color: #6c757d;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #5a6268;
+    }
+  }
+  
+  &--danger {
+    background-color: #dc3545;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #c82333;
+    }
+  }
+  
+  &--success {
+    background-color: #28a745;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #218838;
+    }
+  }
+  
+  &--outline {
+    background-color: transparent;
+    color: #007bff;
+    border-color: #007bff;
+    
+    &:hover:not(:disabled) {
+      background-color: #007bff;
+      color: white;
+    }
+  }
+  
+  &--small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  &--medium {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  &--large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+  }
+  
+  &--full-width {
+    width: 100%;
+  }
+  
+  &--loading {
+    position: relative;
+    color: transparent;
+  }
+  
+  &__spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  
+  &__text {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
