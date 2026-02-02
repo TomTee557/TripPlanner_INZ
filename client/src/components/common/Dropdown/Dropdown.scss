@@ -29,6 +29,20 @@
       border-color: #007bff;
       box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
     }
+
+    &--error {
+      border-color: #dc3545;
+      
+      &:hover {
+        border-color: #c82333;
+      }
+    }
+  }
+
+  &__error {
+    font-size: 0.875rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
   }
   
   &__display {

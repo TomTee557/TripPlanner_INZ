@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { Input } from '@components/common/Input';
 import { Button } from '@components/common/Button';
 import { Dropdown } from '@components/common/Dropdown';
+import { Modal } from '@components/common/Modal';
+import { CurrencyConverter } from '@components/common/CurrencyConverter';
 import { formatDateToInput } from '@utils/helpers';
 import { tripTypeLabels, availablePictures } from '@utils/constants';
 import type { Trip, CreateTripData, UpdateTripData } from '@types';
@@ -20,19 +22,65 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
   const isEditMode = !!trip;
   
   const [formData, setFormData] = useState({
-    title: trip?.title || '',
-    country: trip?.country || '',
-    dateFrom: trip ? formatDateToInput(trip.dateFrom) : '',
-    dateTo: trip ? formatDateToInput(trip.dateTo) : '',
-    price: trip?.price?.toString() || '',
-    tripType: trip?.tripType || '',
-    picture: trip?.picture || '',
-    description: trip?.description || '',
-    tags: trip?.tags || ''
+    title: '',
+    country: '',
+    dateFrom: '',
+    dateTo: '',
+    price: '',
+    tripType: '',
+    picture: '',
+    description: '',
+    tags: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPictureModal, setShowPictureModal] = useState(false);
+  const [showCurrencyConverter, setShowCurrencyConverter] = useState(false);
+
+  // Initialize form data when trip changes
+  useEffect(() => {
+    if (trip) {
+      // Parse price from budget string (e.g., "$3,000" -> "3000")
+      let priceValue = '';
+      if (trip.budget) {
+        priceValue = trip.budget.replace(/[^0-9.]/g, '');
+      } else if (trip.price) {
+        priceValue = trip.price.toString();
+      }
+
+      // Handle tripType as array or string
+      let tripTypeValue = '';
+      if (trip.tripType) {
+        tripTypeValue = Array.isArray(trip.tripType) ? trip.tripType[0] : trip.tripType;
+      }
+
+      // Handle tags as array or string
+      let tagsValue = '';
+      if (trip.tags) {
+        tagsValue = Array.isArray(trip.tags) ? trip.tags.join(', ') : trip.tags;
+      }
+
+      // Handle picture path - remove /public/assets/ or /public/ prefix
+      let pictureValue = '';
+      if (trip.image) {
+        pictureValue = trip.image.replace(/^\/public\/assets\//, '/').replace(/^\/public\//, '/');
+      } else if (trip.picture) {
+        pictureValue = trip.picture.replace(/^\/public\/assets\//, '/').replace(/^\/public\//, '/');
+      }
+
+      setFormData({
+        title: trip.title || '',
+        country: trip.country || '',
+        dateFrom: formatDateToInput(trip.dateFrom),
+        dateTo: formatDateToInput(trip.dateTo),
+        price: priceValue,
+        tripType: tripTypeValue,
+        picture: pictureValue,
+        description: trip.description || '',
+        tags: tagsValue
+      });
+    }
+  }, [trip]);
 
   const tripTypeOptions = Object.entries(tripTypeLabels).map(([value, label]) => ({
     value,
@@ -63,20 +111,30 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      console.log('TripForm: Validation failed');
+      return;
+    }
 
-    const tripData: CreateTripData | UpdateTripData = {
+    const tripData: any = {
       title: formData.title.trim(),
       country: formData.country.trim(),
       dateFrom: formData.dateFrom,
       dateTo: formData.dateTo,
-      price: parseFloat(formData.price),
+      budget: `€${parseFloat(formData.price).toFixed(2)}`,
       tripType: formData.tripType,
-      picture: formData.picture,
+      image: formData.picture,
       description: formData.description.trim() || undefined,
-      tags: formData.tags.trim() || undefined
+      tags: formData.tags ? formData.tags.trim() : undefined
     };
 
+    // Add id for edit mode
+    if (isEditMode && trip) {
+      tripData.id = trip.id;
+    }
+
+    console.log('TripForm: Submitting data:', tripData);
+    console.log('TripForm: isEditMode:', isEditMode);
     onSubmit(tripData);
   };
 
@@ -100,7 +158,6 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         value={formData.title}
         onChange={(e) => handleInputChange('title', e.target.value)}
         error={errors.title}
-        placeholder="Summer Adventure"
         fullWidth
       />
 
@@ -109,7 +166,6 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         value={formData.country}
         onChange={(e) => handleInputChange('country', e.target.value)}
         error={errors.country}
-        placeholder="France"
         fullWidth
       />
 
@@ -140,7 +196,6 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         value={formData.price}
         onChange={(e) => handleInputChange('price', e.target.value)}
         error={errors.price}
-        placeholder="1500"
         fullWidth
       />
 
@@ -150,6 +205,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         value={formData.tripType ? [formData.tripType as string] : []}
         onChange={(selected) => handleInputChange('tripType', selected[0] || '')}
         placeholder="Select trip type"
+        error={errors.tripType}
       />
 
       <div className="trip-form__picture">
@@ -185,7 +241,6 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
           className="trip-form__textarea"
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Describe your trip..."
           rows={4}
         />
       </div>
@@ -194,17 +249,25 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         label="Tags"
         value={formData.tags}
         onChange={(e) => handleInputChange('tags', e.target.value)}
-        placeholder="beach, summer, family"
         fullWidth
       />
 
       <div className="trip-form__actions">
-        <Button type="button" variant="secondary" onClick={onCancel}>
-          Cancel
+        <Button 
+          type="button" 
+          variant="secondary" 
+          onClick={() => setShowCurrencyConverter(true)}
+        >
+          Currency Converter
         </Button>
-        <Button type="submit" variant="primary" loading={loading}>
-          {isEditMode ? 'Update Trip' : 'Create Trip'}
-        </Button>
+        <div className="trip-form__actions-right">
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" loading={loading}>
+            {isEditMode ? 'Update Trip' : 'Create Trip'}
+          </Button>
+        </div>
       </div>
 
       {showPictureModal && (
@@ -229,6 +292,16 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
           </div>
         </div>
       )}
+
+      <Modal
+        isOpen={showCurrencyConverter}
+        onClose={() => setShowCurrencyConverter(false)}
+        title="Currency Converter"
+        size="medium"
+        closeOnOverlayClick={false}
+      >
+        <CurrencyConverter onClose={() => setShowCurrencyConverter(false)} />
+      </Modal>
     </form>
   );
 };

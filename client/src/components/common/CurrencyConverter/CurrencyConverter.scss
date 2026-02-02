@@ -1,0 +1,112 @@
+.currency-converter {
+  padding: 1rem 0;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+  }
+
+  &__select,
+  &__input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    transition: border-color 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #2979ff;
+      box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.1);
+    }
+  }
+
+  &__select {
+    cursor: pointer;
+  }
+
+  &__result {
+    background: #f5f5f5;
+    font-weight: 600;
+    color: #2979ff;
+  }
+
+  &__rate {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(41, 121, 255, 0.1);
+    border-radius: 8px;
+    color: #1565c0;
+    font-weight: 600;
+  }
+
+  &__error {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: 8px;
+    color: #c62828;
+    font-weight: 500;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(33, 150, 243, 0.1);
+    border-radius: 8px;
+    color: #1976d2;
+  }
+
+  &__spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(25, 118, 210, 0.2);
+    border-top-color: #1976d2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+
+    button {
+      min-width: 120px;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

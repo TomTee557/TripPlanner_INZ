@@ -7,20 +7,27 @@ import './TripCard.scss';
 interface TripCardProps {
   trip: Trip;
   onEdit?: (trip: Trip) => void;
-  onDelete?: (tripId: number) => void;
+  onDelete?: (tripId: string) => void;
   canEdit?: boolean;
 }
 
 export const TripCard = ({ trip, onEdit, onDelete, canEdit = false }: TripCardProps) => {
   const days = calculateDaysBetween(trip.dateFrom, trip.dateTo);
   const tags = parseTags(trip.tags || '');
-  const tripTypeLabel = tripTypeLabels[trip.tripType as TripType] || trip.tripType;
+  
+  // Handle tripType as array or string
+  const tripTypeArray = Array.isArray(trip.tripType) ? trip.tripType : [trip.tripType];
+  const tripTypeLabel = tripTypeArray.map(type => tripTypeLabels[type as TripType] || type).join(', ');
+
+  // Fix image path - remove /public/assets/ or /public/ prefix for Vite
+  let imagePath = (trip.image || trip.picture || '');
+  imagePath = imagePath.replace('/public/assets/', '/').replace('/public/', '/');
 
   return (
     <div className="trip-card">
       <div
         className="trip-card__image"
-        style={{ backgroundImage: `url(${trip.picture})` }}
+        style={{ backgroundImage: `url(${imagePath})` }}
       >
         <span className="trip-card__type">{tripTypeLabel}</span>
       </div>
@@ -37,7 +44,7 @@ export const TripCard = ({ trip, onEdit, onDelete, canEdit = false }: TripCardPr
         
         <div className="trip-card__info">
           <span className="trip-card__days">{days} days</span>
-          <span className="trip-card__price">{formatCurrency(trip.price)}</span>
+          <span className="trip-card__price">{trip.budget || (trip.price ? formatCurrency(trip.price) : '')}</span>
         </div>
         
         {trip.description && (
@@ -60,16 +67,18 @@ export const TripCard = ({ trip, onEdit, onDelete, canEdit = false }: TripCardPr
               <button
                 className="trip-card__button trip-card__button--edit"
                 onClick={() => onEdit(trip)}
+                aria-label="Edit trip"
               >
-                Edit
+                <img src="/edit.png" alt="Edit" />
               </button>
             )}
             {onDelete && (
               <button
                 className="trip-card__button trip-card__button--delete"
                 onClick={() => onDelete(trip.id)}
+                aria-label="Delete trip"
               >
-                Delete
+                <img src="/delete.png" alt="Delete" />
               </button>
             )}
           </div>

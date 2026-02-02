@@ -25,8 +25,17 @@ export const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get<{ success: boolean; data: User[] }>('/admin/users');
-      setUsers(response.data || []);
+      // api.get() already returns response.data, not the full response
+      const data: any = await api.get('/admin/users');
+      console.log('API Data:', data);
+      
+      // Backend returns { success: true, users: [...] }
+      if (data && data.users) {
+        setUsers(data.users);
+      } else {
+        console.error('No users in data:', data);
+        setUsers([]);
+      }
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {

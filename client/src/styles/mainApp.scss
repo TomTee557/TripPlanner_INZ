@@ -32,8 +32,11 @@
   min-height: 100vh;
 }
 
-.main-app__search-panel--hidden {
-  display: none;
+/* Hide on mobile only when --hidden class is present */
+@media (max-width: 1000px) {
+  .main-app__search-panel.main-app__search-panel--hidden {
+    display: none !important;
+  }
 }
 
 .main-app__logo {

@@ -29,18 +29,20 @@ export interface AuthResponse {
 
 // Trip types
 export interface Trip {
-  id: number;
-  userId: number;
+  id: string;
+  userId?: number;
   title: string;
   dateFrom: string;
   dateTo: string;
   country: string;
-  tripType: string;
-  tags: string;
-  price: number;
+  tripType: string | string[];
+  tags: string | string[];
+  price?: number;
+  budget?: string;
   picture: string;
   description: string | null;
   createdAt: string;
+  image?: string;
 }
 
 export interface CreateTripData {
@@ -56,7 +58,7 @@ export interface CreateTripData {
 }
 
 export interface UpdateTripData {
-  id: number;
+  id: string;
   title?: string;
   dateFrom?: string;
   dateTo?: string;

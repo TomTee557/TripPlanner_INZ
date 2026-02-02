@@ -74,8 +74,9 @@ export const formatCurrency = (value: number, currency: string = 'EUR'): string 
 /**
  * Parse tags string to array
  */
-export const parseTags = (tagsString: string): string[] => {
+export const parseTags = (tagsString: string | string[]): string[] => {
   if (!tagsString) return [];
+  if (Array.isArray(tagsString)) return tagsString;
   return tagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
 };
 

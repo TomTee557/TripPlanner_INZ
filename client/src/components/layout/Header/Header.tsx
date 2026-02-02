@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getCurrentTime, getCurrentDateWithWeekday } from '@utils/helpers';
-import './Header.scss';
 
 interface HeaderProps {
-  userName?: string;
-  onLogout?: () => void;
+  isMobile?: boolean;
 }
 
-export const Header = ({ userName, onLogout }: HeaderProps) => {
+export const Header = ({ isMobile = false }: HeaderProps) => {
   const [currentTime, setCurrentTime] = useState(getCurrentTime());
   const [currentDate, setCurrentDate] = useState(getCurrentDateWithWeekday());
 
@@ -21,27 +19,9 @@ export const Header = ({ userName, onLogout }: HeaderProps) => {
   }, []);
 
   return (
-    <header className="header">
-      <div className="header__left">
-        <img src="/logo.png" alt="Trip Planner" className="header__logo" />
-        <div className="header__datetime">
-          <div className="header__time">{currentTime}</div>
-          <div className="header__date">{currentDate}</div>
-        </div>
-      </div>
-      
-      <div className="header__right">
-        {userName && (
-          <>
-            <span className="header__username">Hello, {userName}</span>
-            {onLogout && (
-              <button className="header__logout" onClick={onLogout}>
-                Logout
-              </button>
-            )}
-          </>
-        )}
-      </div>
-    </header>
+    <div className={`main-app__clock ${isMobile ? 'main-app__clock--mobile' : ''}`}>
+      <div className="main-app__time" id={isMobile ? 'currentTimeMobile' : 'currentTime'}>{currentTime}</div>
+      <div className="main-app__date" id={isMobile ? 'currentDateMobile' : 'currentDate'}>{currentDate}</div>
+    </div>
   );
 };

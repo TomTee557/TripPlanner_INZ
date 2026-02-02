@@ -47,7 +47,7 @@ export const SearchPanel = ({
   };
 
   return (
-    <div className={`main-app__search-panel ${isOpen ? 'main-app__search-panel--open' : ''}`} id="searchPanel">
+    <div className={`main-app__search-panel ${!isOpen ? 'main-app__search-panel--hidden' : ''}`} id="searchPanel">
       <button className="main-app__button main-app__button--search main-app__close-search--mobile" onClick={onToggle}>
         Hide search panel
       </button>
@@ -123,9 +123,10 @@ export const SearchPanel = ({
           <button type="button" className="main-app__button main-app__button--clear" onClick={handleClear}>
             Clear filters
           </button>
+          {/* Czasowo rezygnuję z tej funkcjonalności
           <button type="submit" className="main-app__button main-app__button--search">
             Search
-          </button>
+          </button> */}
         </div>
       </form>
       

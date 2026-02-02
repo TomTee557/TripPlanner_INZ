@@ -5,7 +5,7 @@ import './TripList.scss';
 interface TripListProps {
   trips: Trip[];
   onEdit?: (trip: Trip) => void;
-  onDelete?: (tripId: number) => void;
+  onDelete?: (tripId: string) => void;
   canEdit?: boolean;
   loading?: boolean;
   emptyMessage?: string;

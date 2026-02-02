@@ -13,6 +13,7 @@ interface DropdownProps {
   label?: string;
   placeholder?: string;
   multiple?: boolean;
+  error?: string;
 }
 
 export const Dropdown = ({
@@ -21,7 +22,8 @@ export const Dropdown = ({
   onChange,
   label,
   placeholder = 'Select...',
-  multiple = false
+  multiple = false,
+  error
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -62,12 +64,14 @@ export const Dropdown = ({
       {label && <label className="dropdown__label">{label}</label>}
       
       <div
-        className={`dropdown__trigger ${isOpen ? 'dropdown__trigger--open' : ''}`}
+        className={`dropdown__trigger ${isOpen ? 'dropdown__trigger--open' : ''} ${error ? 'dropdown__trigger--error' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="dropdown__display">{getDisplayText()}</span>
         <span className="dropdown__arrow">▼</span>
       </div>
+      
+      {error && <span className="dropdown__error">{error}</span>}
       
       {isOpen && (
         <div className="dropdown__content">

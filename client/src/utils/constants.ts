@@ -31,12 +31,17 @@ export const availablePictures = {
 // Trip type mapping for display
 export const tripTypeLabels = {
   'city-break': 'City Break',
+  'city': 'City',
   'mountain': 'Mountain',
   'exotic': 'Exotic',
   'last-minute': 'Last Minute',
   'family': 'Family',
   'trekking': 'Trekking',
-  'cultural': 'Cultural'
+  'cultural': 'Cultural',
+  'beach': 'Beach',
+  'nature': 'Nature',
+  'adventure': 'Adventure',
+  'winter': 'Winter'
 } as const;
 
 export type TripType = keyof typeof tripTypeLabels;

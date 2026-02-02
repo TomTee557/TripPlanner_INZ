@@ -20,11 +20,11 @@ import type { Trip, CreateTripData, UpdateTripData } from '@types';
 // Fetch trips saga
 function* fetchTripsSaga() {
   try {
-    const response: { success: boolean; trips: Trip[] } = yield call(
+    const response: { success: boolean; data: Trip[] } = yield call(
       api.get.bind(api),
       '/trips'
     );
-    yield put(fetchTripsSuccess(response.trips || []));
+    yield put(fetchTripsSuccess(response.data || []));
   } catch (error: any) {
     const message = error.response?.data?.message || 'Failed to fetch trips';
     yield put(fetchTripsFailure(message));
@@ -34,12 +34,12 @@ function* fetchTripsSaga() {
 // Create trip saga
 function* createTripSaga(action: PayloadAction<CreateTripData>) {
   try {
-    const response: { success: boolean; trip: Trip } = yield call(
+    const response: { success: boolean; data: Trip } = yield call(
       api.post.bind(api),
       '/trips',
       action.payload
     );
-    yield put(createTripSuccess(response.trip));
+    yield put(createTripSuccess(response.data));
     // Re-fetch trips to get updated list
     yield put(fetchTripsRequest());
   } catch (error: any) {
@@ -51,21 +51,29 @@ function* createTripSaga(action: PayloadAction<CreateTripData>) {
 // Update trip saga
 function* updateTripSaga(action: PayloadAction<UpdateTripData>) {
   try {
+    console.log('updateTripSaga: Called with payload:', action.payload);
     const { id, ...data } = action.payload;
-    const response: { success: boolean; trip: Trip } = yield call(
+    console.log('updateTripSaga: Trip ID:', id);
+    console.log('updateTripSaga: Data to send:', data);
+    const response: any = (yield call(
       api.put.bind(api),
       `/trips/${id}`,
       data
-    );
-    yield put(updateTripSuccess(response.trip));
+    )) as never;
+    console.log('updateTripSaga: Response:', response);
+    // api.put already unwraps response.data, so response.data is the trip object
+    yield put(updateTripSuccess(response.data || response));
+    // Refresh trips list
+    yield put(fetchTripsRequest());
   } catch (error: any) {
+    console.error('updateTripSaga: Error:', error);
     const message = error.response?.data?.message || 'Failed to update trip';
     yield put(updateTripFailure(message));
   }
 }
 
 // Delete trip saga
-function* deleteTripSaga(action: PayloadAction<number>) {
+function* deleteTripSaga(action: PayloadAction<string>) {
   try {
     yield call(api.delete.bind(api), `/trips/${action.payload}`);
     yield put(deleteTripSuccess(action.payload));

@@ -22,9 +22,11 @@ const MainAppPage = () => {
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
   const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [tripToDelete, setTripToDelete] = useState<string | null>(null);
   const [filters, setFilters] = useState<TripFilters>({});
-  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(true); // Desktop always true, mobile controlled
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -57,17 +59,35 @@ const MainAppPage = () => {
   };
 
   const handleEditTrip = (data: CreateTripData | UpdateTripData) => {
+    console.log('MainAppPage: handleEditTrip called with data:', data);
+    console.log('MainAppPage: selectedTrip:', selectedTrip);
     if (selectedTrip) {
-      dispatch(updateTripRequest({ id: selectedTrip.id, ...(data as Partial<CreateTripData>) }));
+      const updateData: any = { ...data, id: selectedTrip.id };
+      console.log('MainAppPage: Dispatching updateTripRequest with:', updateData);
+      dispatch(updateTripRequest(updateData));
       setIsEditTripModalOpen(false);
       setSelectedTrip(null);
+    } else {
+      console.log('MainAppPage: No selectedTrip!');
     }
   };
 
-  const handleDeleteTrip = (tripId: number) => {
-    if (window.confirm('Are you sure you want to delete this trip?')) {
-      dispatch(deleteTripRequest(tripId));
+  const handleDeleteTrip = (tripId: string) => {
+    setTripToDelete(tripId);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (tripToDelete) {
+      dispatch(deleteTripRequest(tripToDelete));
+      setIsDeleteConfirmOpen(false);
+      setTripToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteConfirmOpen(false);
+    setTripToDelete(null);
   };
 
   const handleEditClick = (trip: Trip) => {
@@ -130,9 +150,13 @@ const MainAppPage = () => {
           <button className="main-app__toggle-search" onClick={() => setIsSearchPanelOpen(!isSearchPanelOpen)}>
             {isSearchPanelOpen ? 'Hide search panel' : 'Show search panel'}
           </button>
+          <Header isMobile={true} />
         </div>
 
-        <Header userName={user?.name} onLogout={handleLogout} />
+        {/* Desktop Header with Clock */}
+        <div className="main-app__header">
+          <Header />
+        </div>
 
         {/* Trips Section */}
         <div className="main-app__trips">
@@ -170,6 +194,7 @@ const MainAppPage = () => {
         onClose={() => setIsAddTripModalOpen(false)}
         title="Add trip"
         size="large"
+        closeOnOverlayClick={false}
       >
         <TripForm onSubmit={handleAddTrip} onCancel={() => setIsAddTripModalOpen(false)} />
       </Modal>
@@ -180,6 +205,7 @@ const MainAppPage = () => {
         onClose={handleCloseEditModal}
         title="Edit trip"
         size="large"
+        closeOnOverlayClick={false}
       >
         {selectedTrip && (
           <TripForm
@@ -197,10 +223,58 @@ const MainAppPage = () => {
           onClose={() => setIsUserManagementOpen(false)}
           title="User Management"
           size="fullscreen"
+          closeOnOverlayClick={false}
         >
           <UserManagement />
         </Modal>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        onClose={cancelDelete}
+        title="Delete Trip"
+        size="small"
+        closeOnOverlayClick={false}
+      >
+        <div style={{ padding: '1rem' }}>
+          <p style={{ marginBottom: '1.5rem', fontSize: '1rem', color: '#333' }}>
+            Are you sure you want to delete this trip? This action cannot be undone.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <button
+              onClick={cancelDelete}
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: '1px solid #ddd',
+                borderRadius: '0.5rem',
+                background: 'white',
+                color: '#333',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: '500'
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete}
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: 'none',
+                borderRadius: '0.5rem',
+                background: '#dc3545',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: '500'
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
