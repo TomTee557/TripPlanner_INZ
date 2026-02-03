@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  successMessage: string | null;
 }
 
 const initialState: AuthState = {
@@ -15,7 +16,8 @@ const initialState: AuthState = {
   token: localStorage.getItem('authToken'),
   isAuthenticated: !!localStorage.getItem('authToken'),
   loading: false,
-  error: null,
+  error: sessionStorage.getItem('authError') || null,
+  successMessage: sessionStorage.getItem('authSuccess') || null,
 };
 
 const authSlice = createSlice({
@@ -26,6 +28,9 @@ const authSlice = createSlice({
     loginRequest: (state, _action: PayloadAction<LoginCredentials>) => {
       state.loading = true;
       state.error = null;
+      state.successMessage = null;
+      sessionStorage.removeItem('authError');
+      sessionStorage.removeItem('authSuccess');
     },
     loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.loading = false;
@@ -41,27 +46,26 @@ const authSlice = createSlice({
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
+      sessionStorage.setItem('authError', action.payload);
     },
 
     // Register actions
     registerRequest: (state, _action: PayloadAction<RegisterData>) => {
       state.loading = true;
       state.error = null;
+      state.successMessage = null;
+      sessionStorage.removeItem('authSuccess');
     },
-    registerSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    registerSuccess: (state, _action: PayloadAction<{ user: User; token: string }>) => {
       state.loading = false;
-      state.isAuthenticated = true;
-      state.user = action.payload.user;
-      state.token = action.payload.token;
       state.error = null;
-      
-      // Save to localStorage
-      localStorage.setItem('authToken', action.payload.token);
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      state.successMessage = 'Registration successful! Please log in.';
+      sessionStorage.setItem('authSuccess', 'Registration successful! Please log in.');
     },
     registerFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
+      sessionStorage.setItem('authError', action.payload);
     },
 
     // Logout
@@ -79,6 +83,9 @@ const authSlice = createSlice({
     // Clear errors
     clearError: (state) => {
       state.error = null;
+      state.successMessage = null;
+      sessionStorage.removeItem('authError');
+      sessionStorage.removeItem('authSuccess');
     },
   },
 });

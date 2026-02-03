@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginRequest, registerRequest } from '@store/slices/authSlice';
+import { loginRequest, registerRequest, clearError } from '@store/slices/authSlice';
 import type { RootState } from '@store';
 import '@styles/auth.scss';
 
 const AuthPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { loading, error, successMessage, isAuthenticated } = useSelector((state: RootState) => state.auth);
   
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -19,10 +19,18 @@ const AuthPage = () => {
   });
 
   // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate('/app');
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/app');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Switch to login after successful registration
+  useEffect(() => {
+    if (successMessage && !isLogin) {
+      setIsLogin(true);
+    }
+  }, [successMessage, isLogin]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +63,7 @@ const AuthPage = () => {
       <div className="auth__column">
         <div className="auth__container">
           <div className="auth__content">
-            <img src="/src/assets/logo.png" alt="Trip Planner Logo" className="auth__logo" />
+            <img src="/logo.png" alt="Trip Planner Logo" className="auth__logo" />
             
             <form className="auth__form" onSubmit={handleSubmit}>
               <h2 className="auth__title">{isLogin ? 'Log in' : 'Register'}</h2>
@@ -118,7 +126,11 @@ const AuthPage = () => {
               
               <p className="auth__switch">
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <a href="#" onClick={(e) => { e.preventDefault(); setIsLogin(!isLogin); }}>
+                <a href="#" onClick={(e) => { 
+                  e.preventDefault(); 
+                  dispatch(clearError());
+                  setIsLogin(!isLogin); 
+                }}>
                   {isLogin ? 'Register' : 'Log in'}
                 </a>
               </p>
@@ -126,6 +138,12 @@ const AuthPage = () => {
               {error && (
                 <div className="auth__message auth__message--error">
                   {error}
+                </div>
+              )}
+              
+              {successMessage && (
+                <div className="auth__message auth__message--success">
+                  {successMessage}
                 </div>
               )}
             </form>
