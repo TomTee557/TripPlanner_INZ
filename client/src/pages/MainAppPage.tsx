@@ -138,22 +138,28 @@ const MainAppPage = () => {
 
   // Filter trips based on search criteria
   const filteredTrips = trips.filter((trip: Trip) => {
-    if (filters.title && !trip.title.toLowerCase().includes(filters.title.toLowerCase())) {
+    if (filters.title && trip.title && !trip.title.toLowerCase().includes(filters.title.toLowerCase())) {
       return false;
     }
-    if (filters.country && !trip.country.toLowerCase().includes(filters.country.toLowerCase())) {
+    if (filters.country && trip.country && !trip.country.toLowerCase().includes(filters.country.toLowerCase())) {
       return false;
     }
-    if (filters.tripTypes && filters.tripTypes.length > 0 && !filters.tripTypes.includes(trip.tripType)) {
+    if (filters.tripTypes && filters.tripTypes.length > 0) {
+      const tripTypeArray = Array.isArray(trip.tripType) ? trip.tripType : [trip.tripType];
+      if (!tripTypeArray.some(type => filters.tripTypes?.includes(type))) {
+        return false;
+      }
+    }
+    if (filters.tags && trip.tags) {
+      const tagsString = Array.isArray(trip.tags) ? trip.tags.join(',') : trip.tags;
+      if (!tagsString.toLowerCase().includes(filters.tags.toLowerCase())) {
+        return false;
+      }
+    }
+    if (filters.dateFrom && trip.dateFrom && trip.dateFrom < filters.dateFrom) {
       return false;
     }
-    if (filters.tags && !trip.tags.toLowerCase().includes(filters.tags.toLowerCase())) {
-      return false;
-    }
-    if (filters.dateFrom && trip.dateFrom < filters.dateFrom) {
-      return false;
-    }
-    if (filters.dateTo && trip.dateTo > filters.dateTo) {
+    if (filters.dateTo && trip.dateTo && trip.dateTo > filters.dateTo) {
       return false;
     }
     return true;
