@@ -1,0 +1,120 @@
+// ZDPAI Project - Trip Planner ERD
+// Generated: 2026-02-06
+// Use at: https://dbdiagram.io
+
+Table users {
+  id integer [pk, increment]
+  email varchar(255) [unique, not null]
+  name varchar(255) [not null]
+  password varchar(255) [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table trips {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id integer [ref: > users.id, not null]
+  title varchar(255) [not null]
+  date_from date [not null]
+  date_to date [not null]
+  country varchar(100) [not null]
+  trip_type jsonb
+  tags jsonb
+  budget varchar(50)
+  description text
+  image varchar(500)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    user_id
+  }
+  
+  Note: 'Main trips table - stores user travel plans. ON DELETE CASCADE from users.'
+}
+
+Table expense_categories {
+  id integer [pk, increment]
+  name varchar(100) [unique, not null]
+  icon varchar(10)
+  color varchar(7)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Categories for expenses: Accommodation, Transportation, Food, Activities, etc.'
+}
+
+Table expenses {
+  id uuid [pk, default: `gen_random_uuid()`]
+  trip_id uuid [ref: > trips.id, not null]
+  category_id integer [ref: > expense_categories.id]
+  user_id integer [ref: > users.id, not null]
+  amount decimal(10,2) [not null]
+  currency varchar(3) [default: 'USD']
+  description text
+  expense_date date [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    trip_id
+    category_id
+    user_id
+  }
+  
+  Note: 'Trip expenses with category tracking. ON DELETE CASCADE from trips and users.'
+}
+
+Table packing_categories {
+  id integer [pk, increment]
+  name varchar(100) [unique, not null]
+  icon varchar(10)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Categories for packing: Clothing, Toiletries, Electronics, Documents, etc.'
+}
+
+Table packing_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  trip_id uuid [ref: > trips.id, not null]
+  category_id integer [ref: > packing_categories.id]
+  name varchar(255) [not null]
+  quantity integer [default: 1]
+  is_packed boolean [default: false]
+  priority varchar(20) [default: 'medium', note: 'low, medium, high']
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    trip_id
+    category_id
+  }
+  
+  Note: 'Packing list items for each trip. ON DELETE CASCADE from trips.'
+}
+
+Table todo_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  trip_id uuid [ref: > trips.id, not null]
+  title varchar(255) [not null]
+  description text
+  due_date date
+  is_completed boolean [default: false]
+  priority varchar(20) [default: 'medium', note: 'low, medium, high']
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    trip_id
+  }
+  
+  Note: 'Todo items/tasks for trip preparation. ON DELETE CASCADE from trips.'
+}
+
+// Relationships Summary:
+// - One User can have Many Trips (1:N)
+// - One Trip can have Many Expenses (1:N) - CASCADE DELETE
+// - One Trip can have Many Packing Items (1:N) - CASCADE DELETE
+// - One Trip can have Many Todo Items (1:N) - CASCADE DELETE
+// - One Expense Category can be used in Many Expenses (1:N)
+// - One Packing Category can be used in Many Packing Items (1:N)
+// - One User can have Many Expenses (1:N) - CASCADE DELETE

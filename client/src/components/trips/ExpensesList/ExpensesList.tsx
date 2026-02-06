@@ -161,7 +161,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
                 className="expense-item__delete"
                 onClick={() => handleDelete(expense.id)}
               >
-                🗑️
+                <img src="/delete.png" alt="Delete" />
               </button>
             </div>
           ))

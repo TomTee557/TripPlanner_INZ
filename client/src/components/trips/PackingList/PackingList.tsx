@@ -140,7 +140,9 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
               <span className="packing-item__name">{item.name}</span>
               <span className="packing-item__meta">Qty: {item.quantity} | {item.priority}</span>
             </div>
-            <button onClick={() => handleDelete(item.id)}>🗑️</button>
+            <button onClick={() => handleDelete(item.id)}>
+              <img src="/delete.png" alt="Delete" />
+            </button>
           </div>
         ))}
       </div>

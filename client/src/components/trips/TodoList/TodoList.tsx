@@ -149,7 +149,9 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
                   </span>
                 )}
               </div>
-              <button onClick={() => handleDelete(item.id)}>🗑️</button>
+              <button onClick={() => handleDelete(item.id)}>
+                <img src="/delete.png" alt="Delete" />
+              </button>
             </div>
           );
         })}
