@@ -11,6 +11,9 @@ import { TripList } from '@components/trips/TripList/TripList';
 import { TripForm } from '@components/trips/TripForm/TripForm';
 import { UserManagement } from '@components/admin/UserManagement/UserManagement';
 import { Modal } from '@components/common/Modal/Modal';
+import { ExpensesList } from '@components/trips/ExpensesList/ExpensesList';
+import { PackingList } from '@components/trips/PackingList/PackingList';
+import { TodoList } from '@components/trips/TodoList/TodoList';
 import '@styles/mainApp.scss';
 
 const MainAppPage = () => {
@@ -23,6 +26,9 @@ const MainAppPage = () => {
   const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
+  const [isPackingModalOpen, setIsPackingModalOpen] = useState(false);
+  const [isTodosModalOpen, setIsTodosModalOpen] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [tripToDelete, setTripToDelete] = useState<string | null>(null);
   const [filters, setFilters] = useState<TripFilters>({});
@@ -97,6 +103,36 @@ const MainAppPage = () => {
 
   const handleCloseEditModal = () => {
     setIsEditTripModalOpen(false);
+    setSelectedTrip(null);
+  };
+
+  const handleViewExpenses = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setIsExpensesModalOpen(true);
+  };
+
+  const handleViewPacking = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setIsPackingModalOpen(true);
+  };
+
+  const handleViewTodos = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setIsTodosModalOpen(true);
+  };
+
+  const handleCloseExpenses = () => {
+    setIsExpensesModalOpen(false);
+    setSelectedTrip(null);
+  };
+
+  const handleClosePacking = () => {
+    setIsPackingModalOpen(false);
+    setSelectedTrip(null);
+  };
+
+  const handleCloseTodos = () => {
+    setIsTodosModalOpen(false);
     setSelectedTrip(null);
   };
 
@@ -183,6 +219,9 @@ const MainAppPage = () => {
             loading={loading}
             onEdit={handleEditClick}
             onDelete={handleDeleteTrip}
+            onViewExpenses={handleViewExpenses}
+            onViewPacking={handleViewPacking}
+            onViewTodos={handleViewTodos}
             canEdit={true}
           />
         </div>
@@ -274,6 +313,39 @@ const MainAppPage = () => {
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Expenses Modal */}
+      <Modal
+        isOpen={isExpensesModalOpen}
+        onClose={handleCloseExpenses}
+        title={`Expenses - ${selectedTrip?.title || ''}`}
+        size="large"
+        closeOnOverlayClick={false}
+      >
+        {selectedTrip && <ExpensesList tripId={selectedTrip.id} />}
+      </Modal>
+
+      {/* Packing List Modal */}
+      <Modal
+        isOpen={isPackingModalOpen}
+        onClose={handleClosePacking}
+        title={`Packing List - ${selectedTrip?.title || ''}`}
+        size="large"
+        closeOnOverlayClick={false}
+      >
+        {selectedTrip && <PackingList tripId={selectedTrip.id} />}
+      </Modal>
+
+      {/* Todo List Modal */}
+      <Modal
+        isOpen={isTodosModalOpen}
+        onClose={handleCloseTodos}
+        title={`To-Do List - ${selectedTrip?.title || ''}`}
+        size="large"
+        closeOnOverlayClick={false}
+      >
+        {selectedTrip && <TodoList tripId={selectedTrip.id} />}
       </Modal>
     </div>
   );

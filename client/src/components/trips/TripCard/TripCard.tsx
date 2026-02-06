@@ -8,10 +8,13 @@ interface TripCardProps {
   trip: Trip;
   onEdit?: (trip: Trip) => void;
   onDelete?: (tripId: string) => void;
+  onViewExpenses?: (trip: Trip) => void;
+  onViewPacking?: (trip: Trip) => void;
+  onViewTodos?: (trip: Trip) => void;
   canEdit?: boolean;
 }
 
-export const TripCard = ({ trip, onEdit, onDelete, canEdit = false }: TripCardProps) => {
+export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking, onViewTodos, canEdit = false }: TripCardProps) => {
   const days = calculateDaysBetween(trip.dateFrom, trip.dateTo);
   const tags = parseTags(trip.tags || '');
   
@@ -61,28 +64,53 @@ export const TripCard = ({ trip, onEdit, onDelete, canEdit = false }: TripCardPr
           </div>
         )}
         
-        {canEdit && (
-          <div className="trip-card__actions">
-            {onEdit && (
-              <button
-                className="trip-card__button trip-card__button--edit"
-                onClick={() => onEdit(trip)}
-                aria-label="Edit trip"
-              >
-                <img src="/edit.png" alt="Edit" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                className="trip-card__button trip-card__button--delete"
-                onClick={() => onDelete(trip.id)}
-                aria-label="Delete trip"
-              >
-                <img src="/delete.png" alt="Delete" />
-              </button>
-            )}
-          </div>
-        )}
+        <div className="trip-card__actions">
+          {onViewExpenses && (
+            <button
+              className="trip-card__button trip-card__button--expenses"
+              onClick={() => onViewExpenses(trip)}
+              title="View Expenses"
+            >
+              💰 Expenses
+            </button>
+          )}
+          {onViewPacking && (
+            <button
+              className="trip-card__button trip-card__button--packing"
+              onClick={() => onViewPacking(trip)}
+              title="Packing List"
+            >
+              🎒 Packing
+            </button>
+          )}
+          {onViewTodos && (
+            <button
+              className="trip-card__button trip-card__button--todos"
+              onClick={() => onViewTodos(trip)}
+              title="To-Do List"
+            >
+              ✓ To-Do
+            </button>
+          )}
+          {canEdit && onEdit && (
+            <button
+              className="trip-card__button trip-card__button--edit"
+              onClick={() => onEdit(trip)}
+              aria-label="Edit trip"
+            >
+              <img src="/edit.png" alt="Edit" />
+            </button>
+          )}
+          {canEdit && onDelete && (
+            <button
+              className="trip-card__button trip-card__button--delete"
+              onClick={() => onDelete(trip.id)}
+              aria-label="Delete trip"
+            >
+              <img src="/delete.png" alt="Delete" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ model User {
   
   // Relations
   trips     Trip[]
+  expenses  Expense[]
   
   @@map("users")
   @@index([email])
@@ -43,8 +44,98 @@ model Trip {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
   
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses     Expense[]
+  packingItems PackingItem[]
+  todoItems    TodoItem[]
   
   @@map("trips")
   @@index([userId])
 }
+
+model ExpenseCategory {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique @db.VarChar(100)
+  icon      String?   @db.VarChar(50)
+  color     String?   @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  expenses  Expense[]
+  
+  @@map("expense_categories")
+}
+
+model Expense {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId      String          @map("trip_id") @db.Uuid
+  categoryId  Int             @map("category_id")
+  userId      Int             @map("user_id")
+  amount      Decimal         @db.Decimal(10, 2)
+  currency    String          @default("USD") @db.VarChar(3)
+  description String?         @db.Text
+  expenseDate DateTime        @map("expense_date") @db.Date
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at")
+  
+  // Relations
+  trip        Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("expenses")
+  @@index([tripId])
+  @@index([categoryId])
+  @@index([userId])
+}
+
+model PackingCategory {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique @db.VarChar(100)
+  icon         String?       @db.VarChar(50)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  // Relations
+  packingItems PackingItem[]
+  
+  @@map("packing_categories")
+}
+
+model PackingItem {
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId     String          @map("trip_id") @db.Uuid
+  categoryId Int             @map("category_id")
+  name       String          @db.VarChar(255)
+  quantity   Int             @default(1)
+  isPacked   Boolean         @default(false) @map("is_packed")
+  priority   String          @default("medium") @db.VarChar(20)
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @default(now()) @updatedAt @map("updated_at")
+  
+  // Relations
+  trip       Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  category   PackingCategory @relation(fields: [categoryId], references: [id])
+  
+  @@map("packing_items")
+  @@index([tripId])
+  @@index([categoryId])
+}
+
+model TodoItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId      String   @map("trip_id") @db.Uuid
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  dueDate     DateTime? @map("due_date") @db.Date
+  isCompleted Boolean  @default(false) @map("is_completed")
+  priority    String   @default("medium") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  
+  // Relations
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  @@map("todo_items")
+  @@index([tripId])
+}
+

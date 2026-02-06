@@ -107,12 +107,11 @@
     padding-top: 1rem;
     border-top: 1px solid #eee;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
   
   &__button {
-    width: 36px;
-    height: 36px;
-    padding: 0;
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -120,7 +119,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e9ecef;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     
     img {
       width: 20px;
@@ -128,8 +129,39 @@
       object-fit: contain;
       filter: brightness(0) saturate(100%) invert(31%) sepia(96%) saturate(2444%) hue-rotate(200deg) brightness(101%) contrast(101%);
     }
+
+    &--expenses {
+      background: #e7f3ff;
+      color: #0066cc;
+      &:hover {
+        background: #cce5ff;
+        transform: translateY(-2px);
+      }
+    }
+
+    &--packing {
+      background: #fff3e0;
+      color: #e65100;
+      &:hover {
+        background: #ffe0b2;
+        transform: translateY(-2px);
+      }
+    }
+
+    &--todos {
+      background: #e8f5e9;
+      color: #2e7d32;
+      &:hover {
+        background: #c8e6c9;
+        transform: translateY(-2px);
+      }
+    }
     
     &--edit {
+      background: #e9ecef;
+      width: 36px;
+      height: 36px;
+      padding: 0;
       &:hover {
         background: #dee2e6;
         transform: scale(1.05);
@@ -137,6 +169,10 @@
     }
     
     &--delete {
+      background: #e9ecef;
+      width: 36px;
+      height: 36px;
+      padding: 0;
       &:hover {
         background: #dee2e6;
         transform: scale(1.05);

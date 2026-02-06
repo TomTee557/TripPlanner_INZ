@@ -2,6 +2,9 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import tripsRoutes from './trips.routes';
 import adminRoutes from './admin.routes';
+import expensesRoutes from './expenses.routes';
+import packingRoutes from './packing.routes';
+import todosRoutes from './todos.routes';
 
 const router = Router();
 
@@ -13,6 +16,15 @@ router.use('/trips', tripsRoutes);
 
 // Admin routes: /api/admin/*
 router.use('/admin', adminRoutes);
+
+// Expenses routes: /api/trips/:tripId/expenses/* and /api/expense-categories
+router.use('/', expensesRoutes);
+
+// Packing routes: /api/trips/:tripId/packing/* and /api/packing-categories
+router.use('/', packingRoutes);
+
+// Todos routes: /api/trips/:tripId/todos/*
+router.use('/', todosRoutes);
 
 // Health check endpoint
 router.get('/health', (_req, res) => {

@@ -143,6 +143,121 @@ DELETE {{baseUrl}}/api/admin/users/{{userId}}
 Authorization: Bearer {{adminToken}}
 
 ### ============================================
+### EXPENSES ENDPOINTS (require authentication)
+### ============================================
+
+### Get all expense categories
+GET {{baseUrl}}/api/expense-categories
+Authorization: Bearer {{token}}
+
+### Get all expenses for a trip
+GET {{baseUrl}}/api/trips/{{tripId}}/expenses
+Authorization: Bearer {{token}}
+
+### Get single expense
+GET {{baseUrl}}/api/trips/{{tripId}}/expenses/EXPENSE_ID_HERE
+Authorization: Bearer {{token}}
+
+### Create new expense
+POST {{baseUrl}}/api/trips/{{tripId}}/expenses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "amount": 150.50,
+  "currency": "USD",
+  "description": "Hotel booking",
+  "expenseDate": "2026-02-10"
+}
+
+### Update expense
+PUT {{baseUrl}}/api/trips/{{tripId}}/expenses/EXPENSE_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "amount": 175.00,
+  "description": "Updated hotel booking"
+}
+
+### Delete expense
+DELETE {{baseUrl}}/api/trips/{{tripId}}/expenses/EXPENSE_ID_HERE
+Authorization: Bearer {{token}}
+
+### ============================================
+### PACKING ITEMS ENDPOINTS (require authentication)
+### ============================================
+
+### Get all packing categories
+GET {{baseUrl}}/api/packing-categories
+Authorization: Bearer {{token}}
+
+### Get all packing items for a trip
+GET {{baseUrl}}/api/trips/{{tripId}}/packing
+Authorization: Bearer {{token}}
+
+### Create new packing item
+POST {{baseUrl}}/api/trips/{{tripId}}/packing
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "name": "Passport",
+  "quantity": 1,
+  "isPacked": false,
+  "priority": "high"
+}
+
+### Update packing item
+PUT {{baseUrl}}/api/trips/{{tripId}}/packing/PACKING_ITEM_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isPacked": true
+}
+
+### Delete packing item
+DELETE {{baseUrl}}/api/trips/{{tripId}}/packing/PACKING_ITEM_ID_HERE
+Authorization: Bearer {{token}}
+
+### ============================================
+### TODO ITEMS ENDPOINTS (require authentication)
+### ============================================
+
+### Get all todo items for a trip
+GET {{baseUrl}}/api/trips/{{tripId}}/todos
+Authorization: Bearer {{token}}
+
+### Create new todo item
+POST {{baseUrl}}/api/trips/{{tripId}}/todos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Book hotel",
+  "description": "Reserve accommodation in city center",
+  "dueDate": "2026-03-15",
+  "priority": "high",
+  "isCompleted": false
+}
+
+### Update todo item
+PUT {{baseUrl}}/api/trips/{{tripId}}/todos/TODO_ITEM_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isCompleted": true
+}
+
+### Delete todo item
+DELETE {{baseUrl}}/api/trips/{{tripId}}/todos/TODO_ITEM_ID_HERE
+Authorization: Bearer {{token}}
+
+### ============================================
 ### ERROR TESTING
 ### ============================================
 

@@ -72,6 +72,39 @@ export interface UpdateUserPasswordRequest {
 }
 
 /**
+ * Expense request body
+ */
+export interface ExpenseRequest {
+  categoryId: number;
+  amount: number;
+  currency?: string;
+  description?: string;
+  expenseDate: string; // ISO date string
+}
+
+/**
+ * Packing item request body
+ */
+export interface PackingItemRequest {
+  categoryId: number;
+  name: string;
+  quantity?: number;
+  isPacked?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+/**
+ * Todo item request body
+ */
+export interface TodoItemRequest {
+  title: string;
+  description?: string;
+  dueDate?: string; // ISO date string
+  isCompleted?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+/**
  * Standard API success response
  */
 export interface ApiSuccessResponse<T = any> {

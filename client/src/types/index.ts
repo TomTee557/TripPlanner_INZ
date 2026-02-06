@@ -79,6 +79,110 @@ export interface TripFilters {
   dateTo?: string;
 }
 
+// Expense types
+export interface ExpenseCategory {
+  id: number;
+  name: string;
+  icon?: string;
+  color?: string;
+  createdAt: string;
+}
+
+export interface Expense {
+  id: string;
+  tripId: string;
+  categoryId: number;
+  categoryName?: string;
+  categoryIcon?: string;
+  categoryColor?: string;
+  amount: number;
+  currency: string;
+  description?: string;
+  expenseDate: string;
+  createdAt: string;
+}
+
+export interface CreateExpenseData {
+  categoryId: number;
+  amount: number;
+  currency?: string;
+  description?: string;
+  expenseDate: string;
+}
+
+export interface UpdateExpenseData {
+  categoryId?: number;
+  amount?: number;
+  currency?: string;
+  description?: string;
+  expenseDate?: string;
+}
+
+// Packing types
+export interface PackingCategory {
+  id: number;
+  name: string;
+  icon?: string;
+  createdAt: string;
+}
+
+export interface PackingItem {
+  id: string;
+  tripId: string;
+  categoryId: number;
+  categoryName?: string;
+  categoryIcon?: string;
+  name: string;
+  quantity: number;
+  isPacked: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+}
+
+export interface CreatePackingItemData {
+  categoryId: number;
+  name: string;
+  quantity?: number;
+  isPacked?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+export interface UpdatePackingItemData {
+  categoryId?: number;
+  name?: string;
+  quantity?: number;
+  isPacked?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+// Todo types
+export interface TodoItem {
+  id: string;
+  tripId: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  isCompleted: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+}
+
+export interface CreateTodoItemData {
+  title: string;
+  description?: string;
+  dueDate?: string;
+  isCompleted?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+export interface UpdateTodoItemData {
+  title?: string;
+  description?: string;
+  dueDate?: string;
+  isCompleted?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+}
+
 // API Response types
 export interface ApiError {
   error: string;
