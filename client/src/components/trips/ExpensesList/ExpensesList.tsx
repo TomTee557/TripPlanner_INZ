@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Expense, ExpenseCategory, CreateExpenseData } from '../../../types';
 import * as expensesService from '../../../services/expenses.service';
 import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
+import { ConfirmDialog } from '../../common/ConfirmDialog/ConfirmDialog';
 import './ExpensesList.scss';
 
 interface ExpensesListProps {
@@ -14,6 +15,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateExpenseData>({
     categoryId: 0,
     amount: 0,
@@ -62,14 +64,20 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
     }
   };
 
-  const handleDelete = async (expenseId: string) => {
-    if (!confirm('Are you sure you want to delete this expense?')) return;
+  const handleDeleteClick = (expenseId: string) => {
+    setConfirmDelete(expenseId);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete) return;
     try {
-      await expensesService.deleteExpense(tripId, expenseId);
+      await expensesService.deleteExpense(tripId, confirmDelete);
+      setConfirmDelete(null);
       await loadData();
     } catch (error) {
       console.error('Failed to delete expense:', error);
       setError('Failed to delete expense. Please try again or contact the administrator if the problem persists.');
+      setConfirmDelete(null);
     }
   };
 
@@ -87,6 +95,12 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
           onClose={() => setError(null)}
         />
       )}
+      <ConfirmDialog 
+        isOpen={!!confirmDelete}
+        message="Are you sure you want to delete this expense?"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete(null)}
+      />
       <div className="expenses-list">
         <div className="expenses-list__header">
           <h3>Expenses</h3>
@@ -171,7 +185,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
               </div>
               <button
                 className="expense-item__delete"
-                onClick={() => handleDelete(expense.id)}
+                onClick={() => handleDeleteClick(expense.id)}
               >
                 <img src="/delete.png" alt="Delete" />
               </button>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { PackingItem, PackingCategory, CreatePackingItemData } from '../../../types';
 import * as packingService from '../../../services/packing.service';
 import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
+import { ConfirmDialog } from '../../common/ConfirmDialog/ConfirmDialog';
 import './PackingList.scss';
 
 interface PackingListProps {
@@ -14,6 +15,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreatePackingItemData>({
     categoryId: 0,
     name: '',
@@ -65,14 +67,20 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
     }
   };
 
-  const handleDelete = async (itemId: string) => {
-    if (!confirm('Delete this item?')) return;
+  const handleDeleteClick = (itemId: string) => {
+    setConfirmDelete(itemId);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete) return;
     try {
-      await packingService.deletePackingItem(tripId, itemId);
+      await packingService.deletePackingItem(tripId, confirmDelete);
+      setConfirmDelete(null);
       await loadData();
     } catch (error) {
-      console.error('Failed to delete item:', error);
+      console.error('Failed to delete packing item:', error);
       setError('Failed to delete packing item. Please try again or contact the administrator if the problem persists.');
+      setConfirmDelete(null);
     }
   };
 
@@ -88,6 +96,12 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
           onClose={() => setError(null)}
         />
       )}
+      <ConfirmDialog 
+        isOpen={!!confirmDelete}
+        message="Are you sure you want to delete this item?"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete(null)}
+      />
       <div className="packing-list">
         <div className="packing-list__header">
         <h3>Packing List</h3>
@@ -153,7 +167,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
               <span className="packing-item__name">{item.name}</span>
               <span className="packing-item__meta">Qty: {item.quantity} | {item.priority}</span>
             </div>
-            <button onClick={() => handleDelete(item.id)}>
+            <button onClick={() => handleDeleteClick(item.id)}>
               <img src="/delete.png" alt="Delete" />
             </button>
           </div>

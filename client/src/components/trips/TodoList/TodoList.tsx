@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { TodoItem, CreateTodoItemData } from '../../../types';
 import * as todoService from '../../../services/todos.service';
 import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
+import { ConfirmDialog } from '../../common/ConfirmDialog/ConfirmDialog';
 import './TodoList.scss';
 
 interface TodoListProps {
@@ -13,6 +14,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateTodoItemData>({
     title: '',
     description: '',
@@ -58,14 +60,20 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
     }
   };
 
-  const handleDelete = async (itemId: string) => {
-    if (!confirm('Delete this todo?')) return;
+  const handleDeleteClick = (itemId: string) => {
+    setConfirmDelete(itemId);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete) return;
     try {
-      await todoService.deleteTodoItem(tripId, itemId);
+      await todoService.deleteTodoItem(tripId, confirmDelete);
+      setConfirmDelete(null);
       await loadItems();
     } catch (error) {
       console.error('Failed to delete todo:', error);
       setError('Failed to delete todo. Please try again or contact the administrator if the problem persists.');
+      setConfirmDelete(null);
     }
   };
 
@@ -77,6 +85,12 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
   return (
     <>
       {error && <ErrorNotification message={error} onClose={() => setError(null)} />}
+      <ConfirmDialog 
+        isOpen={!!confirmDelete}
+        message="Are you sure you want to delete this todo?"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete(null)}
+      />
       <div className="todo-list">
       <div className="todo-list__header">
         <h3>To-Do List</h3>
@@ -155,7 +169,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
                   </span>
                 )}
               </div>
-              <button onClick={() => handleDelete(item.id)}>
+              <button onClick={() => handleDeleteClick(item.id)}>
                 <img src="/delete.png" alt="Delete" />
               </button>
             </div>
