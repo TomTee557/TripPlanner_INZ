@@ -35,6 +35,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       setCategories(categoriesData);
     } catch (error) {
       console.error('Failed to load expenses:', error);
+      alert('Failed to load expenses. Please try again or contact the administrator if the problem persists.');
     } finally {
       setLoading(false);
     }
@@ -55,6 +56,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       });
     } catch (error) {
       console.error('Failed to create expense:', error);
+      alert('Failed to create expense. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -65,6 +67,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       await loadData();
     } catch (error) {
       console.error('Failed to delete expense:', error);
+      alert('Failed to delete expense. Please try again or contact the administrator if the problem persists.');
     }
   };
 

@@ -976,99 +976,99 @@ ON CONFLICT DO NOTHING;
 -- ADDITIONAL EXPENSES FOR ALL TRIPS
 -- =============================================================================
 -- Expenses for Iceland Road Trip
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 850.00, 'EUR', '2026-06-02', 'Hotel booking for 7 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 850.00, 'EUR', '2026-06-02', 'Hotel booking for 7 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Iceland Road Trip' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 420.00, 'EUR', '2026-06-01', 'Car rental for 14 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 420.00, 'EUR', '2026-06-01', 'Car rental for 14 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Iceland Road Trip' AND ec.name = 'Transportation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 180.00, 'EUR', '2026-06-08', 'Restaurant meals'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 180.00, 'EUR', '2026-06-08', 'Restaurant meals'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Iceland Road Trip' AND ec.name = 'Food & Dining';
 
 -- Expenses for Greek Island Hopping
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 650.00, 'EUR', '2026-08-11', 'Hotel Santorini 5 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 650.00, 'EUR', '2026-08-11', 'Hotel Santorini 5 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Greek Island Hopping' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 230.00, 'EUR', '2026-08-12', 'Ferry tickets between islands'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 230.00, 'EUR', '2026-08-12', 'Ferry tickets between islands'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Greek Island Hopping' AND ec.name = 'Transportation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 120.00, 'EUR', '2026-08-15', 'Beach activities'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 120.00, 'EUR', '2026-08-15', 'Beach activities'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Greek Island Hopping' AND ec.name = 'Activities';
 
 -- Expenses for Swiss Alps Skiing
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 1800.00, 'EUR', '2026-12-20', 'Chalet rental'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 1800.00, 'EUR', '2026-12-20', 'Chalet rental'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Swiss Alps Skiing' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 350.00, 'EUR', '2026-12-21', 'Ski pass 14 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 350.00, 'EUR', '2026-12-21', 'Ski pass 14 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Swiss Alps Skiing' AND ec.name = 'Activities';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 180.00, 'EUR', '2026-12-22', 'Ski equipment rental'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 180.00, 'EUR', '2026-12-22', 'Ski equipment rental'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Swiss Alps Skiing' AND ec.name = 'Activities';
 
 -- Expenses for New York City  
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 980.00, 'USD', '2026-05-01', 'Manhattan hotel 6 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 980.00, 'USD', '2026-05-01', 'Manhattan hotel 6 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'New York City' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 280.00, 'USD', '2026-05-03', 'Broadway show tickets'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 280.00, 'USD', '2026-05-03', 'Broadway show tickets'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'New York City' AND ec.name = 'Entertainment';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 420.00, 'USD', '2026-05-02', 'Shopping Fifth Avenue'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 420.00, 'USD', '2026-05-02', 'Shopping Fifth Avenue'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'New York City' AND ec.name = 'Shopping';
 
 -- Expenses for Morocco Desert Tour
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 380.00, 'EUR', '2026-09-16', 'Riad Marrakech 4 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 380.00, 'EUR', '2026-09-16', 'Riad Marrakech 4 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Morocco Desert Tour' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 450.00, 'EUR', '2026-09-18', 'Desert tour 3 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 450.00, 'EUR', '2026-09-18', 'Desert tour 3 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Morocco Desert Tour' AND ec.name = 'Activities';
 
 -- Expenses for Norway Fjords
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 1200.00, 'EUR', '2026-07-06', 'Fjord cruise 7 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 1200.00, 'EUR', '2026-07-06', 'Fjord cruise 7 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Norway Fjords' AND ec.name = 'Transportation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 180.00, 'EUR', '2026-07-10', 'Guided hiking tour'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 180.00, 'EUR', '2026-07-10', 'Guided hiking tour'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Norway Fjords' AND ec.name = 'Activities';
 
 -- Expenses for Spain Cultural Tour
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 680.00, 'EUR', '2026-10-02', 'Hotels in 3 cities'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 680.00, 'EUR', '2026-10-02', 'Hotels in 3 cities'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Spain Cultural Tour' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 220.00, 'EUR', '2026-10-03', 'Museum tickets and tours'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 220.00, 'EUR', '2026-10-03', 'Museum tickets and tours'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Spain Cultural Tour' AND ec.name = 'Activities';
 
@@ -1265,18 +1265,18 @@ FROM trips t WHERE t.title = 'Spain Cultural Tour';
 -- =============================================================================
 
 -- Barcelona Beach Escape (user1)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 560.00, 'EUR', '2026-06-20', 'Beachfront apartment 8 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 560.00, 'EUR', '2026-06-20', 'Beachfront apartment 8 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Barcelona Beach Escape' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 85.00, 'EUR', '2026-06-21', 'Sagrada Familia tickets'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 85.00, 'EUR', '2026-06-21', 'Sagrada Familia tickets'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Barcelona Beach Escape' AND ec.name = 'Activities';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 140.00, 'EUR', '2026-06-23', 'Restaurants and tapas'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 140.00, 'EUR', '2026-06-23', 'Restaurants and tapas'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Barcelona Beach Escape' AND ec.name = 'Food & Dining';
 
@@ -1304,18 +1304,18 @@ SELECT t.id, 'Learn Spanish phrases', 'Basic Spanish for tourists', '2026-06-15'
 FROM trips t WHERE t.title = 'Barcelona Beach Escape';
 
 -- Amsterdam Canal Tour (user1)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 480.00, 'EUR', '2026-09-10', 'Canal house hotel 5 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 480.00, 'EUR', '2026-09-10', 'Canal house hotel 5 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Amsterdam Canal Tour' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 120.00, 'EUR', '2026-09-11', 'Van Gogh Museum tickets'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 120.00, 'EUR', '2026-09-11', 'Van Gogh Museum tickets'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Amsterdam Canal Tour' AND ec.name = 'Activities';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 60.00, 'EUR', '2026-09-12', 'Bike rental for 5 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 60.00, 'EUR', '2026-09-12', 'Bike rental for 5 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Amsterdam Canal Tour' AND ec.name = 'Transportation';
 
@@ -1338,13 +1338,13 @@ SELECT t.id, 'Research bike routes', 'Find scenic cycling paths', '2026-09-05', 
 FROM trips t WHERE t.title = 'Amsterdam Canal Tour';
 
 -- Vienna Music Festival (user1)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 680.00, 'EUR', '2026-10-20', 'Luxury hotel 5 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 680.00, 'EUR', '2026-10-20', 'Luxury hotel 5 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Vienna Music Festival' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 280.00, 'EUR', '2026-10-22', 'Concert tickets x2'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 280.00, 'EUR', '2026-10-22', 'Concert tickets x2'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Vienna Music Festival' AND ec.name = 'Entertainment';
 
@@ -1367,18 +1367,18 @@ SELECT t.id, 'Reserve restaurant', 'Book at Michelin-starred restaurant', '2026-
 FROM trips t WHERE t.title = 'Vienna Music Festival';
 
 -- Dubai Shopping Festival (user2)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 2200.00, 'EUR', '2027-01-10', '5-star hotel 8 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 2200.00, 'EUR', '2027-01-10', '5-star hotel 8 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Dubai Shopping Festival' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 850.00, 'EUR', '2027-01-12', 'Shopping spree at Dubai Mall'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 850.00, 'EUR', '2027-01-12', 'Shopping spree at Dubai Mall'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Dubai Shopping Festival' AND ec.name = 'Shopping';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 180.00, 'EUR', '2027-01-14', 'Burj Khalifa tickets'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 180.00, 'EUR', '2027-01-14', 'Burj Khalifa tickets'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Dubai Shopping Festival' AND ec.name = 'Activities';
 
@@ -1401,13 +1401,13 @@ SELECT t.id, 'Research shopping areas', 'Find best malls and souks', '2026-12-20
 FROM trips t WHERE t.title = 'Dubai Shopping Festival';
 
 -- Bali Yoga Retreat (user2)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 1600.00, 'EUR', '2026-08-01', 'Yoga retreat package 14 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 1600.00, 'EUR', '2026-08-01', 'Yoga retreat package 14 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Bali Yoga Retreat' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 340.00, 'EUR', '2026-08-03', 'Spa and massage treatments'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 340.00, 'EUR', '2026-08-03', 'Spa and massage treatments'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Bali Yoga Retreat' AND ec.name = 'Activities';
 
@@ -1430,13 +1430,13 @@ SELECT t.id, 'Get travel insurance', 'Purchase comprehensive coverage', '2026-07
 FROM trips t WHERE t.title = 'Bali Yoga Retreat';
 
 -- Scottish Highlands (user2)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 620.00, 'EUR', '2026-07-12', 'B&B accommodations 8 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 620.00, 'EUR', '2026-07-12', 'B&B accommodations 8 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Scottish Highlands' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 380.00, 'EUR', '2026-07-13', 'Car rental for 9 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 380.00, 'EUR', '2026-07-13', 'Car rental for 9 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Scottish Highlands' AND ec.name = 'Transportation';
 
@@ -1459,13 +1459,13 @@ SELECT t.id, 'Book castle tours', 'Reserve Edinburgh Castle tour', '2026-07-05',
 FROM trips t WHERE t.title = 'Scottish Highlands';
 
 -- Prague Christmas Markets (user3)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 440.00, 'EUR', '2026-12-10', 'Old Town hotel 7 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 440.00, 'EUR', '2026-12-10', 'Old Town hotel 7 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Prague Christmas Markets' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 150.00, 'EUR', '2026-12-12', 'Christmas market shopping'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 150.00, 'EUR', '2026-12-12', 'Christmas market shopping'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Prague Christmas Markets' AND ec.name = 'Shopping';
 
@@ -1488,13 +1488,13 @@ SELECT t.id, 'Book Christmas dinner', 'Reserve traditional Czech restaurant', '2
 FROM trips t WHERE t.title = 'Prague Christmas Markets';
 
 -- Portugal Wine Tour (user3)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 560.00, 'EUR', '2026-05-15', 'Douro Valley hotel 7 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 560.00, 'EUR', '2026-05-15', 'Douro Valley hotel 7 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Portugal Wine Tour' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 320.00, 'EUR', '2026-05-16', 'Wine tasting tours'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 320.00, 'EUR', '2026-05-16', 'Wine tasting tours'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Portugal Wine Tour' AND ec.name = 'Activities';
 
@@ -1517,13 +1517,13 @@ SELECT t.id, 'Learn about Portuguese wine', 'Research Port and Douro wines', '20
 FROM trips t WHERE t.title = 'Portugal Wine Tour';
 
 -- Croatian Coast (user3)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 1280.00, 'EUR', '2026-07-25', 'Sailing boat rental 12 days'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 1280.00, 'EUR', '2026-07-25', 'Sailing boat rental 12 days'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Croatian Coast' AND ec.name = 'Transportation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 420.00, 'EUR', '2026-07-27', 'Marina fees and fuel'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 420.00, 'EUR', '2026-07-27', 'Marina fees and fuel'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Croatian Coast' AND ec.name = 'Transportation';
 
@@ -1546,13 +1546,13 @@ SELECT t.id, 'Plan sailing route', 'Map out island stops', '2026-07-15', FALSE, 
 FROM trips t WHERE t.title = 'Croatian Coast';
 
 -- Kenya Safari (user4)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 3200.00, 'EUR', '2026-11-01', 'Safari lodge 14 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 3200.00, 'EUR', '2026-11-01', 'Safari lodge 14 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Kenya Safari' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 1800.00, 'EUR', '2026-11-03', 'Guided safari tours'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 1800.00, 'EUR', '2026-11-03', 'Guided safari tours'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Kenya Safari' AND ec.name = 'Activities';
 
@@ -1575,13 +1575,13 @@ SELECT t.id, 'Book safari package', 'Reserve Masai Mara tour', '2026-09-15', TRU
 FROM trips t WHERE t.title = 'Kenya Safari';
 
 -- Peru Machu Picchu (user4)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 980.00, 'EUR', '2026-09-20', 'Hotels in Cusco and Aguas Calientes'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 980.00, 'EUR', '2026-09-20', 'Hotels in Cusco and Aguas Calientes'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Peru Machu Picchu' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 680.00, 'EUR', '2026-09-22', 'Inca Trail permit and guide'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 680.00, 'EUR', '2026-09-22', 'Inca Trail permit and guide'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Peru Machu Picchu' AND ec.name = 'Activities';
 
@@ -1604,13 +1604,13 @@ SELECT t.id, 'Train fitness', 'Prepare for high altitude hiking', '2026-08-01', 
 FROM trips t WHERE t.title = 'Peru Machu Picchu';
 
 -- Canadian Rockies (user4)
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 1480.00, 'EUR', '2026-08-10', 'Mountain lodges 12 nights'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 1480.00, 'EUR', '2026-08-10', 'Mountain lodges 12 nights'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Canadian Rockies' AND ec.name = 'Accommodation';
 
-INSERT INTO expenses (trip_id, category_id, amount, currency, expense_date, description)
-SELECT t.id, ec.id, 520.00, 'EUR', '2026-08-11', 'National park passes and tours'
+INSERT INTO expenses (trip_id, category_id, user_id, amount, currency, expense_date, description)
+SELECT t.id, ec.id, t.user_id, 520.00, 'EUR', '2026-08-11', 'National park passes and tours'
 FROM trips t, expense_categories ec 
 WHERE t.title = 'Canadian Rockies' AND ec.name = 'Activities';
 
@@ -1631,5 +1631,6 @@ FROM trips t WHERE t.title = 'Canadian Rockies';
 INSERT INTO todo_items (trip_id, title, description, due_date, is_completed, priority)
 SELECT t.id, 'Research wildlife safety', 'Learn about bear encounters', '2026-08-01', FALSE, 'medium'
 FROM trips t WHERE t.title = 'Canadian Rockies';
+
 
 

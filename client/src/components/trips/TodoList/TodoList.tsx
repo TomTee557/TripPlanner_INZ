@@ -28,8 +28,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       const data = await todoService.getTodoItems(tripId);
       setItems(data);
     } catch (error) {
-      console.error('Failed to load todo items:', error);
-    } finally {
+      console.error('Failed to load todo items:', error);      alert('Failed to load todo list. Please try again or contact the administrator if the problem persists.');    } finally {
       setLoading(false);
     }
   };
@@ -43,6 +42,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       setFormData({ title: '', description: '', priority: 'medium', dueDate: undefined });
     } catch (error) {
       console.error('Failed to create todo:', error);
+      alert('Failed to create todo item. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -51,8 +51,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       await todoService.toggleCompletedStatus(tripId, itemId, !isCompleted);
       await loadItems();
     } catch (error) {
-      console.error('Failed to toggle completed:', error);
-    }
+      console.error('Failed to toggle completed:', error);      alert('Failed to update todo status. Please try again or contact the administrator if the problem persists.');    }
   };
 
   const handleDelete = async (itemId: string) => {
