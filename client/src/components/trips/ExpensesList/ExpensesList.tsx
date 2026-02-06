@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Expense, ExpenseCategory, CreateExpenseData } from '../../../types';
 import * as expensesService from '../../../services/expenses.service';
+import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
 import './ExpensesList.scss';
 
 interface ExpensesListProps {
@@ -11,6 +12,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<CreateExpenseData>({
     categoryId: 0,
@@ -35,7 +37,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       setCategories(categoriesData);
     } catch (error) {
       console.error('Failed to load expenses:', error);
-      alert('Failed to load expenses. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to load expenses. Please try again or contact the administrator if the problem persists.');
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       });
     } catch (error) {
       console.error('Failed to create expense:', error);
-      alert('Failed to create expense. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to create expense. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -67,7 +69,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       await loadData();
     } catch (error) {
       console.error('Failed to delete expense:', error);
-      alert('Failed to delete expense. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to delete expense. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -78,9 +80,16 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
   }
 
   return (
-    <div className="expenses-list">
-      <div className="expenses-list__header">
-        <h3>Expenses</h3>
+    <>
+      {error && (
+        <ErrorNotification
+          message={error}
+          onClose={() => setError(null)}
+        />
+      )}
+      <div className="expenses-list">
+        <div className="expenses-list__header">
+          <h3>Expenses</h3>
         <button className="expenses-list__add-btn" onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Cancel' : '+ Add Expense'}
         </button>
@@ -171,6 +180,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

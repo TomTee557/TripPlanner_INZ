@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { TodoItem, CreateTodoItemData } from '../../../types';
 import * as todoService from '../../../services/todos.service';
+import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
 import './TodoList.scss';
 
 interface TodoListProps {
@@ -10,6 +11,7 @@ interface TodoListProps {
 export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
   const [items, setItems] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<CreateTodoItemData>({
     title: '',
@@ -42,7 +44,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       setFormData({ title: '', description: '', priority: 'medium', dueDate: undefined });
     } catch (error) {
       console.error('Failed to create todo:', error);
-      alert('Failed to create todo item. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to create todo item. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -51,7 +53,9 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       await todoService.toggleCompletedStatus(tripId, itemId, !isCompleted);
       await loadItems();
     } catch (error) {
-      console.error('Failed to toggle completed:', error);      alert('Failed to update todo status. Please try again or contact the administrator if the problem persists.');    }
+      console.error('Failed to toggle completed:', error);
+      setError('Failed to update todo status. Please try again or contact the administrator if the problem persists.');
+    }
   };
 
   const handleDelete = async (itemId: string) => {
@@ -61,6 +65,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       await loadItems();
     } catch (error) {
       console.error('Failed to delete todo:', error);
+      setError('Failed to delete todo. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -70,7 +75,9 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="todo-list">
+    <>
+      {error && <ErrorNotification message={error} onClose={() => setError(null)} />}
+      <div className="todo-list">
       <div className="todo-list__header">
         <h3>To-Do List</h3>
         <button onClick={() => setShowForm(!showForm)}>
@@ -160,6 +167,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
         <div className="todo-list__empty">No tasks yet. Add one to get started!</div>
       )}
     </div>
+    </>
   );
 };
 

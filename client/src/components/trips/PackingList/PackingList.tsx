@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { PackingItem, PackingCategory, CreatePackingItemData } from '../../../types';
 import * as packingService from '../../../services/packing.service';
+import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
 import './PackingList.scss';
 
 interface PackingListProps {
@@ -11,6 +12,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
   const [items, setItems] = useState<PackingItem[]>([]);
   const [categories, setCategories] = useState<PackingCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<CreatePackingItemData>({
     categoryId: 0,
@@ -34,7 +36,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       setCategories(categoriesData);
     } catch (error) {
       console.error('Failed to load packing items:', error);
-      alert('Failed to load packing list. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to load packing list. Please try again or contact the administrator if the problem persists.');
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       setFormData({ categoryId: 0, name: '', quantity: 1, priority: 'medium' });
     } catch (error) {
       console.error('Failed to create packing item:', error);
-      alert('Failed to create packing item. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to create packing item. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -59,7 +61,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       await loadData();
     } catch (error) {
       console.error('Failed to toggle packed status:', error);
-      alert('Failed to update packing status. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to update packing status. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -70,7 +72,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       await loadData();
     } catch (error) {
       console.error('Failed to delete item:', error);
-      alert('Failed to delete packing item. Please try again or contact the administrator if the problem persists.');
+      setError('Failed to delete packing item. Please try again or contact the administrator if the problem persists.');
     }
   };
 
@@ -79,8 +81,15 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="packing-list">
-      <div className="packing-list__header">
+    <>
+      {error && (
+        <ErrorNotification
+          message={error}
+          onClose={() => setError(null)}
+        />
+      )}
+      <div className="packing-list">
+        <div className="packing-list__header">
         <h3>Packing List</h3>
         <button onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Cancel' : '+ Add Item'}
@@ -151,6 +160,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
         ))}
       </div>
     </div>
+    </>
   );
 };
 
