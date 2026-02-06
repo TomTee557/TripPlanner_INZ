@@ -71,7 +71,8 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               onClick={() => onViewExpenses(trip)}
               title="View Expenses"
             >
-              💰 Expenses
+              <img src="/attach_money.png" alt="Expenses" />
+              <span>Expenses</span>
             </button>
           )}
           {onViewPacking && (
@@ -80,7 +81,8 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               onClick={() => onViewPacking(trip)}
               title="Packing List"
             >
-              🎒 Packing
+              <img src="/personal_bag.png" alt="Packing" />
+              <span>Packing</span>
             </button>
           )}
           {onViewTodos && (
@@ -89,7 +91,8 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               onClick={() => onViewTodos(trip)}
               title="To-Do List"
             >
-              ✓ To-Do
+              <img src="/bookmark_check.png" alt="To-Do" />
+              <span>To-Do</span>
             </button>
           )}
           {canEdit && onEdit && (
