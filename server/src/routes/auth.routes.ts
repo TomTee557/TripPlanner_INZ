@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { login, register, logout } from '../controllers/auth.controller';
+import { login, register, logout, refresh } from '../controllers/auth.controller';
+import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -16,6 +17,13 @@ router.post('/login', login);
  * Response: { success: true, message: string }
  */
 router.post('/register', register);
+
+/**
+ * POST /api/auth/refresh
+ * Header: Authorization: Bearer <token>
+ * Response: { success: true, token: string, expiresIn: string }
+ */
+router.post('/refresh', authenticateToken, refresh);
 
 /**
  * POST /api/auth/logout

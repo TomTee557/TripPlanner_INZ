@@ -147,6 +147,68 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 /**
+ * POST /api/auth/refresh
+ * Refresh JWT token for authenticated user
+ */
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Get current user from authenticated request
+    const user = (req as any).user;
+
+    if (!user || !user.id) {
+      res.status(401).json({
+        error: 'Not authenticated',
+        message: 'Please log in again'
+      });
+      return;
+    }
+
+    // Verify user still exists in database
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!dbUser) {
+      res.status(401).json({
+        error: 'User not found',
+        message: 'Please log in again'
+      });
+      return;
+    }
+
+    // Generate new JWT token
+    const jwtSecret = process.env.JWT_SECRET || '';
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
+    const expiresIn = process.env.JWT_EXPIRES_IN || '15m';
+    const token = jwt.sign(
+      {
+        id: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role
+      } as object,
+      jwtSecret as jwt.Secret,
+      { expiresIn } as jwt.SignOptions
+    );
+
+    // Return new token
+    res.status(200).json({
+      success: true,
+      token,
+      expiresIn
+    });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Unable to refresh session. Please log in again.'
+    });
+  }
+};
+
+/**
  * POST /api/auth/logout
  * Logout user (for JWT this is mainly client-side, server just confirms)
  */
