@@ -418,6 +418,27 @@ ZDPAI-Project/
 
 ## 📡 API Documentation
 
+### Interactive Swagger Documentation
+
+The API includes full **Swagger/OpenAPI** documentation available at:
+
+**URL:** `http://localhost:3000/api-docs`
+
+The Swagger UI provides:
+- ✅ Interactive API testing directly from the browser
+- ✅ Complete request/response schemas
+- ✅ Authentication token management
+- ✅ Example requests and responses
+- ✅ Real-time API exploration
+
+**To access:**
+1. Start the backend server (`npm run dev` in the `server` directory)
+2. Open your browser and navigate to `http://localhost:3000/api-docs`
+3. Click "Authorize" and enter your JWT token (get one by logging in first)
+4. Test any endpoint directly from the interface
+
+---
+
 ### Authentication Endpoints
 
 #### **POST** `/api/auth/register`

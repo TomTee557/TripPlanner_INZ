@@ -1,6 +1,8 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 import apiRoutes from './routes';
 
 // Load environment variables
@@ -40,12 +42,19 @@ if (process.env.NODE_ENV === 'development') {
 // API routes - all routes are prefixed with /api
 app.use('/api', apiRoutes);
 
+// Swagger API documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Trip Planner API Documentation',
+}));
+
 // Root endpoint
 app.get('/', (_req: Request, res: Response) => {
   res.json({
     success: true,
     message: 'Trip Planner API',
     version: '1.0.0',
+    documentation: '/api-docs',
     endpoints: {
       health: '/api/health',
       auth: '/api/auth/*',
@@ -77,6 +86,8 @@ app.use('*', (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log('========================================');
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+  console.log('========================================');
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 API URL: http://localhost:${PORT}/api`);
   console.log('========================================');
