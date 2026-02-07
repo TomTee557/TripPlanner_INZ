@@ -31,8 +31,11 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       setLoading(true);
       const data = await todoService.getTodoItems(tripId);
       setItems(data);
-    } catch (error) {
-      console.error('Failed to load todo items:', error);      alert('Failed to load todo list. Please try again or contact the administrator if the problem persists.');    } finally {
+    } catch (error: any) {
+      console.error('Failed to load todo items:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load todo list. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
+    } finally {
       setLoading(false);
     }
   };
@@ -44,9 +47,10 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       await loadItems();
       setShowForm(false);
       setFormData({ title: '', description: '', priority: 'medium', dueDate: undefined });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create todo:', error);
-      setError('Failed to create todo item. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create todo item. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     }
   };
 
@@ -54,9 +58,10 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
     try {
       await todoService.toggleCompletedStatus(tripId, itemId, !isCompleted);
       await loadItems();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to toggle completed:', error);
-      setError('Failed to update todo status. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update todo status. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     }
   };
 
@@ -70,9 +75,10 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       await todoService.deleteTodoItem(tripId, confirmDelete);
       setConfirmDelete(null);
       await loadItems();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete todo:', error);
-      setError('Failed to delete todo. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete todo. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
       setConfirmDelete(null);
     }
   };

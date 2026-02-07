@@ -37,9 +37,10 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       ]);
       setExpenses(expensesData);
       setCategories(categoriesData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load expenses:', error);
-      setError('Failed to load expenses. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load expenses. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -58,9 +59,10 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
         description: '',
         expenseDate: new Date().toISOString().split('T')[0],
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create expense:', error);
-      setError('Failed to create expense. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create expense. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     }
   };
 
@@ -74,9 +76,10 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
       await expensesService.deleteExpense(tripId, confirmDelete);
       setConfirmDelete(null);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete expense:', error);
-      setError('Failed to delete expense. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete expense. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
       setConfirmDelete(null);
     }
   };

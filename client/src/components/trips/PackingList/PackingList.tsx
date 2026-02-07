@@ -36,9 +36,10 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       ]);
       setItems(itemsData);
       setCategories(categoriesData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load packing items:', error);
-      setError('Failed to load packing list. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load packing list. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -51,9 +52,10 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       await loadData();
       setShowForm(false);
       setFormData({ categoryId: 0, name: '', quantity: 1, priority: 'medium' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create packing item:', error);
-      setError('Failed to create packing item. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create packing item. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     }
   };
 
@@ -61,9 +63,10 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
     try {
       await packingService.togglePackedStatus(tripId, itemId, !isPacked);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to toggle packed status:', error);
-      setError('Failed to update packing status. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update packing status. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
     }
   };
 
@@ -77,9 +80,10 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       await packingService.deletePackingItem(tripId, confirmDelete);
       setConfirmDelete(null);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete packing item:', error);
-      setError('Failed to delete packing item. Please try again or contact the administrator if the problem persists.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete packing item. Please try again or contact the administrator if the problem persists.';
+      setError(errorMessage);
       setConfirmDelete(null);
     }
   };
