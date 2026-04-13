@@ -36,6 +36,11 @@ export const getTodoItems = async (
 
     const todoItems = await prisma.todoItem.findMany({
       where: { tripId },
+      include: {
+        user: {
+          select: { id: true, email: true, name: true, surname: true }
+        }
+      },
       orderBy: [
         { isCompleted: 'asc' },
         { priority: 'desc' },
@@ -51,7 +56,8 @@ export const getTodoItems = async (
       dueDate: item.dueDate ? item.dueDate.toISOString().split('T')[0] : null,
       isCompleted: item.isCompleted,
       priority: item.priority,
-      createdAt: item.createdAt.toISOString()
+      createdAt: item.createdAt.toISOString(),
+      addedBy: item.user ? { id: item.user.id, email: item.user.email, name: item.user.name, surname: item.user.surname } : null
     }));
 
     res.status(200).json({
@@ -113,6 +119,7 @@ export const createTodoItem = async (
     const todoItem = await prisma.todoItem.create({
       data: {
         tripId,
+        userId: req.user.id,
         title,
         description,
         dueDate: dueDate ? new Date(dueDate) : null,

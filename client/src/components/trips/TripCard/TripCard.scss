@@ -29,6 +29,18 @@
     font-size: 0.875rem;
     font-weight: 500;
   }
+
+  &__group-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.4rem 0.85rem;
+    background: #ffc107;
+    color: #333;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
   
   &__content {
     padding: 1.5rem;
@@ -171,6 +183,20 @@
       
       &:hover {
         background: #c8e6c9;
+        transform: translateY(-2px);
+      }
+    }
+
+    &--participants {
+      background: #fff3cd;
+      color: #856404;
+      
+      img {
+        filter: brightness(0) saturate(100%) invert(38%) sepia(61%) saturate(1065%) hue-rotate(18deg) brightness(96%) contrast(91%);
+      }
+      
+      &:hover {
+        background: #ffe69c;
         transform: translateY(-2px);
       }
     }

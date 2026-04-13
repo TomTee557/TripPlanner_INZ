@@ -5,6 +5,7 @@ import adminRoutes from './admin.routes';
 import expensesRoutes from './expenses.routes';
 import packingRoutes from './packing.routes';
 import todosRoutes from './todos.routes';
+import participantsRoutes from './participants.routes';
 
 const router = Router();
 
@@ -25,6 +26,9 @@ router.use('/', packingRoutes);
 
 // Todos routes: /api/trips/:tripId/todos/*
 router.use('/', todosRoutes);
+
+// Participants routes: /api/users/check-email, /api/trips/:tripId/participants/*
+router.use('/', participantsRoutes);
 
 // Health check endpoint
 router.get('/health', (_req, res) => {

@@ -21,8 +21,11 @@ model User {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   
   // Relations
-  trips     Trip[]
-  expenses  Expense[]
+  trips          Trip[]
+  expenses       Expense[]
+  participations TripParticipant[]
+  packingItems   PackingItem[]
+  todoItems      TodoItem[]
   
   @@map("users")
   @@index([email])
@@ -48,6 +51,7 @@ model Trip {
   expenses     Expense[]
   packingItems PackingItem[]
   todoItems    TodoItem[]
+  participants TripParticipant[]
   
   @@map("trips")
   @@index([userId])
@@ -105,6 +109,7 @@ model PackingItem {
   id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tripId     String          @map("trip_id") @db.Uuid
   categoryId Int             @map("category_id")
+  userId     Int?            @map("user_id")
   name       String          @db.VarChar(255)
   quantity   Int             @default(1)
   isPacked   Boolean         @default(false) @map("is_packed")
@@ -115,6 +120,7 @@ model PackingItem {
   // Relations
   trip       Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
   category   PackingCategory @relation(fields: [categoryId], references: [id])
+  user       User?           @relation(fields: [userId], references: [id])
   
   @@map("packing_items")
   @@index([tripId])
@@ -124,6 +130,7 @@ model PackingItem {
 model TodoItem {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tripId      String   @map("trip_id") @db.Uuid
+  userId      Int?     @map("user_id")
   title       String   @db.VarChar(255)
   description String?  @db.Text
   dueDate     DateTime? @map("due_date") @db.Date
@@ -134,8 +141,27 @@ model TodoItem {
   
   // Relations
   trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id])
   
   @@map("todo_items")
   @@index([tripId])
+}
+
+model TripParticipant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId    String   @map("trip_id") @db.Uuid
+  userId    Int      @map("user_id")
+  status    String   @default("PENDING") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+  @@map("trip_participants")
+  @@index([tripId])
+  @@index([userId])
 }
 

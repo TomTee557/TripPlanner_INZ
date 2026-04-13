@@ -37,7 +37,10 @@ export const getPackingItems = async (
     const packingItems = await prisma.packingItem.findMany({
       where: { tripId },
       include: {
-        category: true
+        category: true,
+        user: {
+          select: { id: true, email: true, name: true, surname: true }
+        }
       },
       orderBy: [
         { isPacked: 'asc' },
@@ -56,7 +59,8 @@ export const getPackingItems = async (
       quantity: item.quantity,
       isPacked: item.isPacked,
       priority: item.priority,
-      createdAt: item.createdAt.toISOString()
+      createdAt: item.createdAt.toISOString(),
+      addedBy: item.user ? { id: item.user.id, email: item.user.email, name: item.user.name, surname: item.user.surname } : null
     }));
 
     res.status(200).json({
@@ -119,6 +123,7 @@ export const createPackingItem = async (
       data: {
         tripId,
         categoryId,
+        userId: req.user.id,
         name,
         quantity: quantity || 1,
         isPacked: isPacked || false,

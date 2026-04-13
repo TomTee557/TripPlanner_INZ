@@ -133,7 +133,51 @@
     font-size: 0.875rem;
     color: #dc3545;
   }
-  
+
+  &__group-trip {
+    margin-bottom: 0;
+  }
+
+  &__group-trip-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__participants-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  &__participant-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  &__participant-tag-remove {
+    background: none;
+    border: none;
+    color: #856404;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+
+    &:hover {
+      color: #dc3545;
+    }
+  }
+
   &__actions {
     display: flex;
     gap: 1rem;

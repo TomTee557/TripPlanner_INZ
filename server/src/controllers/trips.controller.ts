@@ -21,6 +21,15 @@ export const getTrips = async (
 
     const trips = await prisma.trip.findMany({
       where: { userId: req.user.id },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: { id: true, email: true, name: true, surname: true }
+            }
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -36,7 +45,15 @@ export const getTrips = async (
       budget: trip.budget,
       description: trip.description,
       image: trip.image,
-      createdAt: trip.createdAt.toISOString()
+      createdAt: trip.createdAt.toISOString(),
+      participants: (trip.participants || []).map((p: any) => ({
+        id: p.id,
+        userId: p.userId,
+        email: p.user.email,
+        name: p.user.name,
+        surname: p.user.surname,
+        status: p.status
+      }))
     }));
 
     res.status(200).json({
@@ -151,6 +168,9 @@ export const createTrip = async (
       return;
     }
 
+    // Extract participant IDs from request body
+    const participantIds: number[] = req.body.participants || [];
+
     // Create trip
     const newTrip = await prisma.trip.create({
       data: {
@@ -166,6 +186,20 @@ export const createTrip = async (
         image: tripData.image || '/public/assets/mountains.jpg'
       }
     });
+
+    // Create participant records if any
+    if (participantIds.length > 0) {
+      const participantData = participantIds.map((userId: number) => ({
+        tripId: newTrip.id,
+        userId,
+        status: 'PENDING'
+      }));
+
+      await prisma.tripParticipant.createMany({
+        data: participantData,
+        skipDuplicates: true
+      });
+    }
 
     res.status(201).json({
       success: true,

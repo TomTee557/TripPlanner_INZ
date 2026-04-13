@@ -14,6 +14,7 @@ import { Modal } from '@components/common/Modal/Modal';
 import { ExpensesList } from '@components/trips/ExpensesList/ExpensesList';
 import { PackingList } from '@components/trips/PackingList/PackingList';
 import { TodoList } from '@components/trips/TodoList/TodoList';
+import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
 import '@styles/mainApp.scss';
 
 const MainAppPage = () => {
@@ -29,6 +30,7 @@ const MainAppPage = () => {
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
   const [isPackingModalOpen, setIsPackingModalOpen] = useState(false);
   const [isTodosModalOpen, setIsTodosModalOpen] = useState(false);
+  const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [tripToDelete, setTripToDelete] = useState<string | null>(null);
   const [filters, setFilters] = useState<TripFilters>({});
@@ -136,6 +138,16 @@ const MainAppPage = () => {
     setSelectedTrip(null);
   };
 
+  const handleViewParticipants = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setIsParticipantsModalOpen(true);
+  };
+
+  const handleCloseParticipants = () => {
+    setIsParticipantsModalOpen(false);
+    setSelectedTrip(null);
+  };
+
   // Filter trips based on search criteria
   const filteredTrips = trips.filter((trip: Trip) => {
     if (filters.title && trip.title && !trip.title.toLowerCase().includes(filters.title.toLowerCase())) {
@@ -228,6 +240,7 @@ const MainAppPage = () => {
             onViewExpenses={handleViewExpenses}
             onViewPacking={handleViewPacking}
             onViewTodos={handleViewTodos}
+            onViewParticipants={handleViewParticipants}
             canEdit={true}
           />
         </div>
@@ -352,6 +365,22 @@ const MainAppPage = () => {
         closeOnOverlayClick={false}
       >
         {selectedTrip && <TodoList tripId={selectedTrip.id} />}
+      </Modal>
+
+      {/* Participants Modal */}
+      <Modal
+        isOpen={isParticipantsModalOpen}
+        onClose={handleCloseParticipants}
+        title={`Participants - ${selectedTrip?.title || ''}`}
+        size="medium"
+        closeOnOverlayClick={true}
+      >
+        {selectedTrip && selectedTrip.participants && (
+          <ParticipantsList
+            participants={selectedTrip.participants}
+            tripTitle={selectedTrip.title}
+          />
+        )}
       </Modal>
     </div>
   );

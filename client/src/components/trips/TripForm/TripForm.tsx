@@ -5,11 +5,19 @@ import { Button } from '@components/common/Button';
 import { Dropdown } from '@components/common/Dropdown';
 import { Modal } from '@components/common/Modal';
 import { CurrencyConverter } from '@components/common/CurrencyConverter';
+import { ParticipantSearch } from '@components/trips/ParticipantSearch/ParticipantSearch';
 import { formatDateToInput } from '@utils/helpers';
 import { tripTypeLabels, availablePictures } from '@utils/constants';
 import type { Trip, CreateTripData, UpdateTripData } from '@types';
 import type { PictureKey } from '@utils/constants';
 import './TripForm.scss';
+
+interface ParticipantUser {
+  id: number;
+  email: string;
+  name: string;
+  surname: string;
+}
 
 interface TripFormProps {
   initialData?: Trip;
@@ -36,6 +44,8 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPictureModal, setShowPictureModal] = useState(false);
   const [showCurrencyConverter, setShowCurrencyConverter] = useState(false);
+  const [showParticipantSearch, setShowParticipantSearch] = useState(false);
+  const [participants, setParticipants] = useState<ParticipantUser[]>([]);
 
   // Initialize form data when trip changes
   useEffect(() => {
@@ -128,6 +138,11 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
       tags: formData.tags ? formData.tags.trim() : undefined
     };
 
+    // Include participant IDs if any
+    if (participants.length > 0) {
+      tripData.participants = participants.map(p => p.id);
+    }
+
     // Add id for edit mode
     if (isEditMode && trip) {
       tripData.id = trip.id;
@@ -207,6 +222,34 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         placeholder="Select trip type"
         error={errors.tripType}
       />
+
+      <div className="trip-form__group-trip">
+        <div className="trip-form__group-trip-row">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowParticipantSearch(true)}
+          >
+            Plan a group trip
+          </Button>
+          {participants.length > 0 && (
+            <div className="trip-form__participants-tags">
+              {participants.map(p => (
+                <span key={p.id} className="trip-form__participant-tag">
+                  {p.name} {p.surname}
+                  <button
+                    type="button"
+                    className="trip-form__participant-tag-remove"
+                    onClick={() => setParticipants(prev => prev.filter(x => x.id !== p.id))}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="trip-form__picture">
         <label>Picture *</label>
@@ -302,6 +345,17 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
       >
         <CurrencyConverter onClose={() => setShowCurrencyConverter(false)} />
       </Modal>
+
+      {showParticipantSearch && (
+        <ParticipantSearch
+          participants={participants}
+          onSave={(updated) => {
+            setParticipants(updated);
+            setShowParticipantSearch(false);
+          }}
+          onCancel={() => setShowParticipantSearch(false)}
+        />
+      )}
     </form>
   );
 };

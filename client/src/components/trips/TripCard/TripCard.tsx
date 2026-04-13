@@ -11,10 +11,11 @@ interface TripCardProps {
   onViewExpenses?: (trip: Trip) => void;
   onViewPacking?: (trip: Trip) => void;
   onViewTodos?: (trip: Trip) => void;
+  onViewParticipants?: (trip: Trip) => void;
   canEdit?: boolean;
 }
 
-export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking, onViewTodos, canEdit = false }: TripCardProps) => {
+export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking, onViewTodos, onViewParticipants, canEdit = false }: TripCardProps) => {
   const days = calculateDaysBetween(trip.dateFrom, trip.dateTo);
   const tags = parseTags(trip.tags || '');
   
@@ -26,6 +27,8 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
   let imagePath = (trip.image || trip.picture || '');
   imagePath = imagePath.replace('/public/assets/', '/').replace('/public/', '/');
 
+  const isGroupTrip = trip.participants && trip.participants.length > 0;
+
   return (
     <div className="trip-card">
       <div
@@ -33,6 +36,9 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
         style={{ backgroundImage: `url(${imagePath})` }}
       >
         <span className="trip-card__type">{tripTypeLabel}</span>
+        {isGroupTrip && (
+          <span className="trip-card__group-badge">Group trip</span>
+        )}
       </div>
       
       <div className="trip-card__content">
@@ -93,6 +99,16 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
             >
               <img src="/bookmark_check.png" alt="To-Do" />
               <span>To-Do</span>
+            </button>
+          )}
+          {isGroupTrip && onViewParticipants && (
+            <button
+              className="trip-card__button trip-card__button--participants"
+              onClick={() => onViewParticipants(trip)}
+              title="Participants"
+            >
+              <img src="/group.svg" alt="Participants" />
+              <span>Participants</span>
             </button>
           )}
           {canEdit && onEdit && (

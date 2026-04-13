@@ -9,6 +9,7 @@ interface TripListProps {
   onViewExpenses?: (trip: Trip) => void;
   onViewPacking?: (trip: Trip) => void;
   onViewTodos?: (trip: Trip) => void;
+  onViewParticipants?: (trip: Trip) => void;
   canEdit?: boolean;
   loading?: boolean;
   emptyMessage?: string;
@@ -21,6 +22,7 @@ export const TripList = ({
   onViewExpenses,
   onViewPacking,
   onViewTodos,
+  onViewParticipants,
   canEdit = false,
   loading = false,
   emptyMessage = 'No trips found. Try adjusting your filters or create a new trip.'
@@ -53,6 +55,7 @@ export const TripList = ({
           onViewExpenses={onViewExpenses}
           onViewPacking={onViewPacking}
           onViewTodos={onViewTodos}
+          onViewParticipants={onViewParticipants}
           canEdit={canEdit}
         />
       ))}

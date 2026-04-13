@@ -28,6 +28,15 @@ export interface AuthResponse {
 }
 
 // Trip types
+export interface TripParticipant {
+  id: string;
+  userId: number;
+  email: string;
+  name: string;
+  surname: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+}
+
 export interface Trip {
   id: string;
   userId?: number;
@@ -43,6 +52,7 @@ export interface Trip {
   description: string | null;
   createdAt: string;
   image?: string;
+  participants?: TripParticipant[];
 }
 
 export interface CreateTripData {
@@ -55,6 +65,7 @@ export interface CreateTripData {
   price: number;
   picture: string;
   description?: string;
+  participants?: number[];
 }
 
 export interface UpdateTripData {
@@ -126,6 +137,13 @@ export interface PackingCategory {
   createdAt: string;
 }
 
+export interface AddedByUser {
+  id: number;
+  email: string;
+  name: string;
+  surname: string;
+}
+
 export interface PackingItem {
   id: string;
   tripId: string;
@@ -137,6 +155,7 @@ export interface PackingItem {
   isPacked: boolean;
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
+  addedBy?: AddedByUser | null;
 }
 
 export interface CreatePackingItemData {
@@ -165,6 +184,7 @@ export interface TodoItem {
   isCompleted: boolean;
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
+  addedBy?: AddedByUser | null;
 }
 
 export interface CreateTodoItemData {
