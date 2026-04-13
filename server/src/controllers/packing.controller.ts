@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import prisma from '../config/database';
 import { AuthenticatedRequest, PackingItemRequest } from '../types';
+import { canAccessTrip } from '../utils/tripAccess';
 
 /**
  * GET /api/trips/:tripId/packing
@@ -21,21 +22,16 @@ export const getPackingItems = async (
 
     const { tripId } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
     const packingItems = await prisma.packingItem.findMany({
-      where: { tripId },
+      where: {
+        tripId,
+        OR: [{ isPrivate: false }, { userId: req.user.id }]
+      },
       include: {
         category: true,
         user: {
@@ -59,6 +55,7 @@ export const getPackingItems = async (
       quantity: item.quantity,
       isPacked: item.isPacked,
       priority: item.priority,
+      isPrivate: item.isPrivate,
       createdAt: item.createdAt.toISOString(),
       addedBy: item.user ? { id: item.user.id, email: item.user.email, name: item.user.name, surname: item.user.surname } : null
     }));
@@ -95,7 +92,7 @@ export const createPackingItem = async (
     }
 
     const { tripId } = req.params;
-    const { categoryId, name, quantity, isPacked, priority }: PackingItemRequest = req.body;
+    const { categoryId, name, quantity, isPacked, priority, isPrivate }: PackingItemRequest = req.body;
 
     // Validate required fields
     if (!categoryId || !name) {
@@ -106,16 +103,8 @@ export const createPackingItem = async (
       return;
     }
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
@@ -127,7 +116,8 @@ export const createPackingItem = async (
         name,
         quantity: quantity || 1,
         isPacked: isPacked || false,
-        priority: priority || 'medium'
+        priority: priority || 'medium',
+        isPrivate: isPrivate ?? false
       },
       include: { category: true }
     });
@@ -175,16 +165,8 @@ export const updatePackingItem = async (
     const { tripId, id } = req.params;
     const { categoryId, name, quantity, isPacked, priority }: PackingItemRequest = req.body;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
@@ -255,16 +237,8 @@ export const deletePackingItem = async (
 
     const { tripId, id } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 

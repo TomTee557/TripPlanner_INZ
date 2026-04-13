@@ -19,8 +19,18 @@ export const getTrips = async (
       return;
     }
 
+    // Fetch trips the user owns OR has been accepted as participant
     const trips = await prisma.trip.findMany({
-      where: { userId: req.user.id },
+      where: {
+        OR: [
+          { userId: req.user.id },
+          {
+            participants: {
+              some: { userId: req.user.id, status: 'ACCEPTED' }
+            }
+          }
+        ]
+      },
       include: {
         participants: {
           include: {
@@ -28,6 +38,9 @@ export const getTrips = async (
               select: { id: true, email: true, name: true, surname: true }
             }
           }
+        },
+        user: {
+          select: { id: true, email: true, name: true, surname: true }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -46,6 +59,13 @@ export const getTrips = async (
       description: trip.description,
       image: trip.image,
       createdAt: trip.createdAt.toISOString(),
+      isOwner: trip.userId === req.user!.id,
+      owner: trip.user ? {
+        id: trip.user.id,
+        email: trip.user.email,
+        name: trip.user.name,
+        surname: trip.user.surname
+      } : null,
       participants: (trip.participants || []).map((p: any) => ({
         id: p.id,
         userId: p.userId,

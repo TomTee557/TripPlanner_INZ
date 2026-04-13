@@ -52,6 +52,13 @@ export interface Trip {
   description: string | null;
   createdAt: string;
   image?: string;
+  isOwner?: boolean;
+  owner?: {
+    id: number;
+    email: string;
+    name: string;
+    surname: string;
+  } | null;
   participants?: TripParticipant[];
 }
 
@@ -110,6 +117,7 @@ export interface Expense {
   currency: string;
   description?: string;
   expenseDate: string;
+  isPrivate: boolean;
   createdAt: string;
 }
 
@@ -119,6 +127,7 @@ export interface CreateExpenseData {
   currency?: string;
   description?: string;
   expenseDate: string;
+  isPrivate?: boolean;
 }
 
 export interface UpdateExpenseData {
@@ -154,6 +163,7 @@ export interface PackingItem {
   quantity: number;
   isPacked: boolean;
   priority: 'low' | 'medium' | 'high';
+  isPrivate: boolean;
   createdAt: string;
   addedBy?: AddedByUser | null;
 }
@@ -164,6 +174,7 @@ export interface CreatePackingItemData {
   quantity?: number;
   isPacked?: boolean;
   priority?: 'low' | 'medium' | 'high';
+  isPrivate?: boolean;
 }
 
 export interface UpdatePackingItemData {
@@ -183,6 +194,7 @@ export interface TodoItem {
   dueDate?: string;
   isCompleted: boolean;
   priority: 'low' | 'medium' | 'high';
+  isPrivate: boolean;
   createdAt: string;
   addedBy?: AddedByUser | null;
 }
@@ -193,6 +205,7 @@ export interface CreateTodoItemData {
   dueDate?: string;
   isCompleted?: boolean;
   priority?: 'low' | 'medium' | 'high';
+  isPrivate?: boolean;
 }
 
 export interface UpdateTodoItemData {
@@ -213,4 +226,94 @@ export interface ApiSuccessResponse<T = any> {
   success: boolean;
   data?: T;
   message?: string;
+}
+
+// Profile types
+export interface UserProfile {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  role: 'USER' | 'ADMIN';
+  birthday: string | null;
+  createdAt: string;
+}
+
+// Document types
+export interface UserDocument {
+  id: string;
+  documentType: string;
+  description: string | null;
+  expirationDate: string;
+  createdAt: string;
+}
+
+export interface CreateDocumentData {
+  documentType: string;
+  description?: string;
+  expirationDate: string;
+}
+
+// Invitation types
+export interface ReceivedInvitation {
+  id: string;
+  type: 'received';
+  tripId: string;
+  tripTitle: string;
+  tripCountry: string;
+  tripDateFrom: string;
+  tripDateTo: string;
+  invitedBy: {
+    id: number;
+    email: string;
+    name: string;
+    surname: string;
+  };
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  ownerSeen: boolean;
+  createdAt: string;
+}
+
+export interface SentInvitation {
+  id: string;
+  type: 'sent';
+  tripId: string;
+  tripTitle: string;
+  participant: {
+    id: number;
+    email: string;
+    name: string;
+    surname: string;
+  };
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  ownerSeen: boolean;
+  createdAt: string;
+}
+
+export interface ConfirmationInvitation {
+  id: string;
+  type: 'confirmation';
+  tripId: string;
+  tripTitle: string;
+  participant: {
+    id: number;
+    email: string;
+    name: string;
+    surname: string;
+  };
+  status: 'ACCEPTED' | 'REJECTED';
+  ownerSeen: boolean;
+  createdAt: string;
+}
+
+export interface InvitationsData {
+  received: ReceivedInvitation[];
+  sent: SentInvitation[];
+  confirmations: ConfirmationInvitation[];
+}
+
+export interface NotificationCount {
+  pendingReceived: number;
+  unseenResponses: number;
+  total: number;
 }

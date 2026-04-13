@@ -7,9 +7,10 @@ import './PackingList.scss';
 
 interface PackingListProps {
   tripId: string;
+  isGroupTrip?: boolean;
 }
 
-export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
+export const PackingList: React.FC<PackingListProps> = ({ tripId, isGroupTrip = false }) => {
   const [items, setItems] = useState<PackingItem[]>([]);
   const [categories, setCategories] = useState<PackingCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
     name: '',
     quantity: 1,
     priority: 'medium',
+    isPrivate: false,
   });
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
       await packingService.createPackingItem(tripId, formData);
       await loadData();
       setShowForm(false);
-      setFormData({ categoryId: 0, name: '', quantity: 1, priority: 'medium' });
+      setFormData({ categoryId: 0, name: '', quantity: 1, priority: 'medium', isPrivate: false });
     } catch (error: any) {
       console.error('Failed to create packing item:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create packing item. Please try again or contact the administrator if the problem persists.';
@@ -154,13 +156,23 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
+          {isGroupTrip && (
+            <label className="packing-list__form-private">
+              <input
+                type="checkbox"
+                checked={formData.isPrivate ?? false}
+                onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+              />
+              Private
+            </label>
+          )}
           <button type="submit">Add</button>
         </form>
       )}
 
       <div className="packing-list__items">
         {items.map((item) => (
-          <div key={item.id} className={`packing-item ${item.isPacked ? 'packed' : ''}`}>
+          <div key={item.id} className={`packing-item ${item.isPacked ? 'packed' : ''}${item.isPrivate ? ' packing-item--private' : ''}`}>
             <input
               type="checkbox"
               checked={item.isPacked}
@@ -168,7 +180,9 @@ export const PackingList: React.FC<PackingListProps> = ({ tripId }) => {
             />
             <span className="packing-item__icon">{item.categoryIcon}</span>
             <div className="packing-item__info">
-              <span className="packing-item__name">{item.name}</span>
+              <span className="packing-item__name">
+                {item.isPrivate && <span title="Private">🔒 </span>}{item.name}
+              </span>
               <span className="packing-item__meta">Qty: {item.quantity} | {item.priority}</span>
             </div>
             <button onClick={() => handleDeleteClick(item.id)}>

@@ -43,6 +43,10 @@
     font-weight: 600;
     font-size: 0.875rem;
     flex-shrink: 0;
+
+    &--owner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
   }
 
   &__item-info {
@@ -90,6 +94,11 @@
     &--pending {
       background: #fff3cd;
       color: #856404;
+    }
+
+    &--owner {
+      background: #ede7f6;
+      color: #4527a0;
     }
   }
 

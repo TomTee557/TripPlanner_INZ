@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import prisma from '../config/database';
 import { AuthenticatedRequest, ExpenseRequest } from '../types';
+import { canAccessTrip } from '../utils/tripAccess';
 
 /**
  * GET /api/trips/:tripId/expenses
@@ -21,21 +22,16 @@ export const getExpenses = async (
 
     const { tripId } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
     const expenses = await prisma.expense.findMany({
-      where: { tripId },
+      where: {
+        tripId,
+        OR: [{ isPrivate: false }, { userId: req.user.id }]
+      },
       include: {
         category: true
       },
@@ -53,6 +49,7 @@ export const getExpenses = async (
       currency: expense.currency,
       description: expense.description,
       expenseDate: expense.expenseDate.toISOString().split('T')[0],
+      isPrivate: expense.isPrivate,
       createdAt: expense.createdAt.toISOString()
     }));
 
@@ -155,7 +152,7 @@ export const createExpense = async (
     }
 
     const { tripId } = req.params;
-    const { categoryId, amount, currency, description, expenseDate }: ExpenseRequest = req.body;
+    const { categoryId, amount, currency, description, expenseDate, isPrivate }: ExpenseRequest = req.body;
 
     // Validate required fields
     if (!categoryId || !amount || !expenseDate) {
@@ -166,16 +163,8 @@ export const createExpense = async (
       return;
     }
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
@@ -187,7 +176,8 @@ export const createExpense = async (
         amount,
         currency: currency || 'USD',
         description,
-        expenseDate: new Date(expenseDate)
+        expenseDate: new Date(expenseDate),
+        isPrivate: isPrivate ?? false
       },
       include: { category: true }
     });
@@ -203,7 +193,8 @@ export const createExpense = async (
         amount: expense.amount.toNumber(),
         currency: expense.currency,
         description: expense.description,
-        expenseDate: expense.expenseDate.toISOString().split('T')[0]
+        expenseDate: expense.expenseDate.toISOString().split('T')[0],
+        isPrivate: expense.isPrivate
       }
     });
   } catch (error) {
@@ -235,16 +226,8 @@ export const updateExpense = async (
     const { tripId, id } = req.params;
     const { categoryId, amount, currency, description, expenseDate }: ExpenseRequest = req.body;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 

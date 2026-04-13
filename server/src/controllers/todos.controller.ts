@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import prisma from '../config/database';
 import { AuthenticatedRequest, TodoItemRequest } from '../types';
+import { canAccessTrip } from '../utils/tripAccess';
 
 /**
  * GET /api/trips/:tripId/todos
@@ -21,21 +22,16 @@ export const getTodoItems = async (
 
     const { tripId } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
     const todoItems = await prisma.todoItem.findMany({
-      where: { tripId },
+      where: {
+        tripId,
+        OR: [{ isPrivate: false }, { userId: req.user.id }]
+      },
       include: {
         user: {
           select: { id: true, email: true, name: true, surname: true }
@@ -56,6 +52,7 @@ export const getTodoItems = async (
       dueDate: item.dueDate ? item.dueDate.toISOString().split('T')[0] : null,
       isCompleted: item.isCompleted,
       priority: item.priority,
+      isPrivate: item.isPrivate,
       createdAt: item.createdAt.toISOString(),
       addedBy: item.user ? { id: item.user.id, email: item.user.email, name: item.user.name, surname: item.user.surname } : null
     }));
@@ -92,7 +89,7 @@ export const createTodoItem = async (
     }
 
     const { tripId } = req.params;
-    const { title, description, dueDate, isCompleted, priority }: TodoItemRequest = req.body;
+    const { title, description, dueDate, isCompleted, priority, isPrivate }: TodoItemRequest = req.body;
 
     // Validate required fields
     if (!title) {
@@ -103,16 +100,8 @@ export const createTodoItem = async (
       return;
     }
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
@@ -124,7 +113,8 @@ export const createTodoItem = async (
         description,
         dueDate: dueDate ? new Date(dueDate) : null,
         isCompleted: isCompleted || false,
-        priority: priority || 'medium'
+        priority: priority || 'medium',
+        isPrivate: isPrivate ?? false
       }
     });
 
@@ -138,7 +128,8 @@ export const createTodoItem = async (
         description: todoItem.description,
         dueDate: todoItem.dueDate ? todoItem.dueDate.toISOString().split('T')[0] : null,
         isCompleted: todoItem.isCompleted,
-        priority: todoItem.priority
+        priority: todoItem.priority,
+        isPrivate: todoItem.isPrivate
       }
     });
   } catch (error) {
@@ -170,16 +161,8 @@ export const updateTodoItem = async (
     const { tripId, id } = req.params;
     const { title, description, dueDate, isCompleted, priority }: TodoItemRequest = req.body;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 
@@ -248,16 +231,8 @@ export const deleteTodoItem = async (
 
     const { tripId, id } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: { id: tripId, userId: req.user.id }
-    });
-
-    if (!trip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found'
-      });
+    if (!await canAccessTrip(tripId, req.user.id)) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found' });
       return;
     }
 

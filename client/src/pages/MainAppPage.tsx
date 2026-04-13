@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchTripsRequest, createTripRequest, updateTripRequest, deleteTripRequest } from '@store/slices/tripsSlice';
@@ -11,10 +11,12 @@ import { TripList } from '@components/trips/TripList/TripList';
 import { TripForm } from '@components/trips/TripForm/TripForm';
 import { UserManagement } from '@components/admin/UserManagement/UserManagement';
 import { Modal } from '@components/common/Modal/Modal';
+import { AccountSettings } from '@components/common/AccountSettings/AccountSettings';
 import { ExpensesList } from '@components/trips/ExpensesList/ExpensesList';
 import { PackingList } from '@components/trips/PackingList/PackingList';
 import { TodoList } from '@components/trips/TodoList/TodoList';
 import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
+import { getNotificationCount } from '@services/account.service';
 import '@styles/mainApp.scss';
 
 const MainAppPage = () => {
@@ -31,10 +33,23 @@ const MainAppPage = () => {
   const [isPackingModalOpen, setIsPackingModalOpen] = useState(false);
   const [isTodosModalOpen, setIsTodosModalOpen] = useState(false);
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
+  const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [tripToDelete, setTripToDelete] = useState<string | null>(null);
   const [filters, setFilters] = useState<TripFilters>({});
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(true); // Desktop always true, mobile controlled
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await getNotificationCount();
+      if (res.data) {
+        setNotificationCount(res.data.total);
+      }
+    } catch {
+      // Silently fail — notifications are non-critical
+    }
+  }, []);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -43,8 +58,12 @@ const MainAppPage = () => {
     } else {
       // Fetch trips on mount
       dispatch(fetchTripsRequest());
+      // Fetch notifications immediately and every 2 minutes
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
+      return () => clearInterval(interval);
     }
-  }, [isAuthenticated, navigate, dispatch]);
+  }, [isAuthenticated, navigate, dispatch, fetchNotifications]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -182,6 +201,7 @@ const MainAppPage = () => {
   }
 
   const isAdmin = user?.role === 'ADMIN';
+  const userInitials = user ? `${user.name.charAt(0)}${user.surname.charAt(0)}`.toUpperCase() : '??';
 
   return (
     <div className="main-app">
@@ -209,6 +229,18 @@ const MainAppPage = () => {
 
         {/* Desktop Header with Clock */}
         <div className="main-app__header">
+          <div className="header-account">
+            <div className="header-account__avatar">{userInitials}</div>
+            <button
+              className="header-account__settings-btn"
+              onClick={() => setIsAccountSettingsOpen(true)}
+            >
+              ⚙ Settings
+              {notificationCount > 0 && (
+                <span className="header-account__badge">{notificationCount}</span>
+              )}
+            </button>
+          </div>
           <Header />
         </div>
 
@@ -342,7 +374,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <ExpensesList tripId={selectedTrip.id} />}
+        {selectedTrip && <ExpensesList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} />}
       </Modal>
 
       {/* Packing List Modal */}
@@ -353,7 +385,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <PackingList tripId={selectedTrip.id} />}
+        {selectedTrip && <PackingList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} />}
       </Modal>
 
       {/* Todo List Modal */}
@@ -364,7 +396,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <TodoList tripId={selectedTrip.id} />}
+        {selectedTrip && <TodoList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} />}
       </Modal>
 
       {/* Participants Modal */}
@@ -379,8 +411,24 @@ const MainAppPage = () => {
           <ParticipantsList
             participants={selectedTrip.participants}
             tripTitle={selectedTrip.title}
+            owner={selectedTrip.owner}
           />
         )}
+      </Modal>
+
+      {/* Account Settings Modal */}
+      <Modal
+        isOpen={isAccountSettingsOpen}
+        onClose={() => setIsAccountSettingsOpen(false)}
+        title="Account Settings"
+        size="large"
+        closeOnOverlayClick={true}
+      >
+        <AccountSettings
+          notificationCount={notificationCount}
+          onNotificationChange={fetchNotifications}
+          onTripListChange={() => dispatch(fetchTripsRequest())}
+        />
       </Modal>
     </div>
   );

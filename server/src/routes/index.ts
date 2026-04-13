@@ -6,6 +6,9 @@ import expensesRoutes from './expenses.routes';
 import packingRoutes from './packing.routes';
 import todosRoutes from './todos.routes';
 import participantsRoutes from './participants.routes';
+import profileRoutes from './profile.routes';
+import documentsRoutes from './documents.routes';
+import invitationsRoutes from './invitations.routes';
 
 const router = Router();
 
@@ -29,6 +32,15 @@ router.use('/', todosRoutes);
 
 // Participants routes: /api/users/check-email, /api/trips/:tripId/participants/*
 router.use('/', participantsRoutes);
+
+// Profile routes: /api/profile/*
+router.use('/profile', profileRoutes);
+
+// Documents routes: /api/documents/*
+router.use('/documents', documentsRoutes);
+
+// Invitations routes: /api/invitations/*
+router.use('/invitations', invitationsRoutes);
 
 // Health check endpoint
 router.get('/health', (_req, res) => {

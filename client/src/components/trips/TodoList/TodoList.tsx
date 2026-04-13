@@ -7,9 +7,10 @@ import './TodoList.scss';
 
 interface TodoListProps {
   tripId: string;
+  isGroupTrip?: boolean;
 }
 
-export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
+export const TodoList: React.FC<TodoListProps> = ({ tripId, isGroupTrip = false }) => {
   const [items, setItems] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +21,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
     description: '',
     priority: 'medium',
     dueDate: undefined,
+    isPrivate: false,
   });
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
       await todoService.createTodoItem(tripId, formData);
       await loadItems();
       setShowForm(false);
-      setFormData({ title: '', description: '', priority: 'medium', dueDate: undefined });
+      setFormData({ title: '', description: '', priority: 'medium', dueDate: undefined, isPrivate: false });
     } catch (error: any) {
       console.error('Failed to create todo:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create todo item. Please try again or contact the administrator if the problem persists.';
@@ -145,6 +147,16 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
             value={formData.dueDate || ''}
             onChange={(e) => setFormData({ ...formData, dueDate: e.target.value || undefined })}
           />
+          {isGroupTrip && (
+            <label className="todo-list__form-private">
+              <input
+                type="checkbox"
+                checked={formData.isPrivate ?? false}
+                onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+              />
+              Private
+            </label>
+          )}
           <button type="submit">Add Task</button>
         </form>
       )}
@@ -153,7 +165,7 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
         {items.map((item) => {
           const isOverdue = overdue.some(o => o.id === item.id);
           return (
-            <div key={item.id} className={`todo-item ${item.isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}`}>
+            <div key={item.id} className={`todo-item ${item.isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}${item.isPrivate ? ' todo-item--private' : ''}`}>
               <input
                 type="checkbox"
                 checked={item.isCompleted}
@@ -161,7 +173,9 @@ export const TodoList: React.FC<TodoListProps> = ({ tripId }) => {
               />
               <div className="todo-item__content">
                 <div className="todo-item__header">
-                  <span className="todo-item__title">{item.title}</span>
+                  <span className="todo-item__title">
+                    {item.isPrivate && <span title="Private">🔒 </span>}{item.title}
+                  </span>
                   <span className={`todo-item__priority priority-${item.priority}`}>
                     {item.priority}
                   </span>

@@ -7,9 +7,10 @@ import './ExpensesList.scss';
 
 interface ExpensesListProps {
   tripId: string;
+  isGroupTrip?: boolean;
 }
 
-export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
+export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId, isGroupTrip = false }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
     currency: 'USD',
     description: '',
     expenseDate: new Date().toISOString().split('T')[0],
+    isPrivate: false,
   });
 
   useEffect(() => {
@@ -58,6 +60,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
         currency: 'USD',
         description: '',
         expenseDate: new Date().toISOString().split('T')[0],
+        isPrivate: false,
       });
     } catch (error: any) {
       console.error('Failed to create expense:', error);
@@ -159,6 +162,17 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
 
+          {isGroupTrip && (
+            <label className="expenses-list__form-private">
+              <input
+                type="checkbox"
+                checked={formData.isPrivate ?? false}
+                onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
+              />
+              Private
+            </label>
+          )}
+
           <button type="submit">Add Expense</button>
         </form>
       )}
@@ -176,7 +190,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
           <p className="expenses-list__empty">No expenses yet</p>
         ) : (
           expenses.map((expense) => (
-            <div key={expense.id} className="expense-item">
+            <div key={expense.id} className={`expense-item${expense.isPrivate ? ' expense-item--private' : ''}`}>
               <span className="expense-item__icon">{expense.categoryIcon}</span>
               <div className="expense-item__info">
                 <span className="expense-item__category">{expense.categoryName}</span>
@@ -184,6 +198,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId }) => {
                 <span className="expense-item__date">{expense.expenseDate}</span>
               </div>
               <div className="expense-item__amount">
+                {expense.isPrivate && <span className="expense-item__private-badge" title="Private">🔒</span>}
                 {expense.amount.toFixed(2)} {expense.currency}
               </div>
               <button

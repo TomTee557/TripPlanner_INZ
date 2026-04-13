@@ -80,6 +80,7 @@ export interface ExpenseRequest {
   currency?: string;
   description?: string;
   expenseDate: string; // ISO date string
+  isPrivate?: boolean;
 }
 
 /**
@@ -91,6 +92,7 @@ export interface PackingItemRequest {
   quantity?: number;
   isPacked?: boolean;
   priority?: 'low' | 'medium' | 'high';
+  isPrivate?: boolean;
 }
 
 /**
@@ -102,6 +104,7 @@ export interface TodoItemRequest {
   dueDate?: string; // ISO date string
   isCompleted?: boolean;
   priority?: 'low' | 'medium' | 'high';
+  isPrivate?: boolean;
 }
 
 /**
