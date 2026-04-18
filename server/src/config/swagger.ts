@@ -233,6 +233,120 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        TripParticipant: {
+          type: 'object',
+          description: 'A single invitation record linking a user to a trip',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'integer', example: 5 },
+            tripId: { type: 'string', format: 'uuid' },
+            status: {
+              type: 'string',
+              enum: ['PENDING', 'ACCEPTED', 'REJECTED', 'LEFT'],
+              example: 'PENDING',
+            },
+            ownerSeen: {
+              type: 'boolean',
+              description: 'Whether the trip owner has acknowledged this status change',
+              example: false,
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        Notification: {
+          type: 'object',
+          description: 'System-generated notification (e.g. TRIP_DELETED)',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'integer', description: 'Recipient user ID', example: 5 },
+            type: {
+              type: 'string',
+              enum: ['TRIP_DELETED'],
+              example: 'TRIP_DELETED',
+            },
+            message: {
+              type: 'string',
+              example: "Trip 'Summer Vacation' has been deleted by the owner.",
+            },
+            seen: { type: 'boolean', example: false },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        TripMessage: {
+          type: 'object',
+          description: 'Unified message shown in the Messages section of the Invitations tab',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            source: {
+              type: 'string',
+              enum: ['participant', 'notification'],
+              description: '`participant` = from TripParticipant (LEFT); `notification` = from Notification table (TRIP_DELETED)',
+            },
+            type: {
+              type: 'string',
+              enum: ['ACCEPTED', 'REJECTED', 'LEFT', 'TRIP_DELETED'],
+            },
+            tripTitle: { type: 'string', example: 'Summer Vacation' },
+            detail: {
+              type: 'string',
+              example: 'John Smith (john@example.com) left your trip.',
+            },
+            seen: { type: 'boolean', example: false },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        InvitationsData: {
+          type: 'object',
+          description: 'Full invitations payload returned by GET /api/invitations',
+          properties: {
+            received: {
+              type: 'array',
+              description: 'PENDING invitations I received to join someone else\'s trip',
+              items: { type: 'object' },
+            },
+            sent: {
+              type: 'array',
+              description: 'PENDING invitations I sent as trip owner',
+              items: { type: 'object' },
+            },
+            confirmations: {
+              type: 'array',
+              description: 'ACCEPTED/REJECTED responses on trips I own (not LEFT — those go to messages)',
+              items: { type: 'object' },
+            },
+            messages: {
+              type: 'array',
+              description: 'LEFT (participant left my trip) and TRIP_DELETED (my trip was deleted) messages',
+              items: { $ref: '#/components/schemas/TripMessage' },
+            },
+          },
+        },
+        NotificationCount: {
+          type: 'object',
+          description: 'Numeric counts for the notification badge in the UI header',
+          properties: {
+            pendingReceived: {
+              type: 'integer',
+              description: 'PENDING invitations waiting for my response',
+              example: 1,
+            },
+            unseenResponses: {
+              type: 'integer',
+              description: 'ACCEPTED/REJECTED/LEFT responses on my trips I haven\'t acknowledged',
+              example: 2,
+            },
+            unseenNotifications: {
+              type: 'integer',
+              description: 'Unread TRIP_DELETED system notifications',
+              example: 0,
+            },
+            total: {
+              type: 'integer',
+              description: 'Sum of all three — displayed as the badge number',
+              example: 3,
+            },
+          },
+        },
       },
     },
     security: [

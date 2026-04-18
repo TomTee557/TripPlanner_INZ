@@ -10,7 +10,7 @@ interface TodoListProps {
   isGroupTrip?: boolean;
 }
 
-export const TodoList: React.FC<TodoListProps> = ({ tripId, isGroupTrip = false }) => {
+export const TodoList = ({ tripId, isGroupTrip = false }: TodoListProps) => {
   const [items, setItems] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -10,7 +10,7 @@ interface PackingListProps {
   isGroupTrip?: boolean;
 }
 
-export const PackingList: React.FC<PackingListProps> = ({ tripId, isGroupTrip = false }) => {
+export const PackingList = ({ tripId, isGroupTrip = false }: PackingListProps) => {
   const [items, setItems] = useState<PackingItem[]>([]);
   const [categories, setCategories] = useState<PackingCategory[]>([]);
   const [loading, setLoading] = useState(true);

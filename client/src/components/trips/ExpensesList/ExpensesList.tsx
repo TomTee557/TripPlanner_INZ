@@ -10,7 +10,7 @@ interface ExpensesListProps {
   isGroupTrip?: boolean;
 }
 
-export const ExpensesList: React.FC<ExpensesListProps> = ({ tripId, isGroupTrip = false }) => {
+export const ExpensesList = ({ tripId, isGroupTrip = false }: ExpensesListProps) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);

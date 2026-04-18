@@ -83,7 +83,7 @@ export const getInvitations = async (
       }));
 
     const formattedConfirmations = sent
-      .filter((inv: any) => inv.status !== 'PENDING')
+      .filter((inv: any) => inv.status !== 'PENDING' && inv.status !== 'LEFT')
       .map((inv: any) => ({
         id: inv.id,
         type: 'confirmation' as const,
@@ -100,12 +100,44 @@ export const getInvitations = async (
         createdAt: inv.createdAt.toISOString()
       }));
 
+    // Messages — owners see LEFT responses; participants see TRIP_DELETED notifications
+    const leftParticipants = sent.filter((inv: any) => inv.status === 'LEFT');
+    const formattedLeft = leftParticipants.map((inv: any) => ({
+      id: inv.id,
+      source: 'participant' as const,
+      type: 'LEFT' as const,
+      tripTitle: inv.trip.title,
+      detail: `${inv.user.name} ${inv.user.surname} (${inv.user.email}) left your trip.`,
+      seen: inv.ownerSeen,
+      createdAt: inv.createdAt.toISOString()
+    }));
+
+    const myNotifications = await prisma.notification.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' }
+    });
+    const formattedNotifications = myNotifications.map((n: any) => ({
+      id: n.id,
+      source: 'notification' as const,
+      type: n.type as 'TRIP_DELETED',
+      tripTitle: '',
+      detail: n.message,
+      seen: n.seen,
+      createdAt: n.createdAt.toISOString()
+    }));
+
+    const messages = [
+      ...formattedLeft,
+      ...formattedNotifications
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     res.status(200).json({
       success: true,
       data: {
         received: formattedReceived,
         sent: formattedSent,
-        confirmations: formattedConfirmations
+        confirmations: formattedConfirmations,
+        messages
       }
     });
   } catch (error) {
@@ -228,6 +260,98 @@ export const confirmInvitation = async (
 };
 
 /**
+ * PUT /api/notifications/:id/mark-read
+ * Mark a system notification as seen
+ */
+export const markNotificationRead = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Not authenticated', message: 'Authentication required' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const notification = await prisma.notification.findFirst({
+      where: { id, userId: req.user.id }
+    });
+
+    if (!notification) {
+      res.status(404).json({ error: 'Not found', message: 'Notification not found' });
+      return;
+    }
+
+    await prisma.notification.update({ where: { id }, data: { seen: true } });
+
+    res.status(200).json({ success: true, message: 'Notification marked as read' });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ error: 'Database error', message: 'Unable to update notification' });
+  }
+};
+
+/**
+ * DELETE /api/invitations/clear-read
+ * Permanently delete invitations/notifications that have already been acted on
+ * Safe to delete: REJECTED (participant never joined), LEFT (participant already left),
+ *                 seen TRIP_DELETED notifications
+ * NOT deleted:    ACCEPTED (participant still active), PENDING (not yet acted on)
+ */
+export const clearReadInvitations = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Not authenticated', message: 'Authentication required' });
+      return;
+    }
+
+    // My trips (to find confirmations/messages I own)
+    const myTrips = await prisma.trip.findMany({
+      where: { userId: req.user.id },
+      select: { id: true }
+    });
+    const myTripIds = myTrips.map((t: any) => t.id);
+
+    // 1. My REJECTED received invitations (I rejected, never joined)
+    const deletedReceived = await prisma.tripParticipant.deleteMany({
+      where: { userId: req.user.id, status: 'REJECTED' }
+    });
+
+    // 2. Confirmations/messages I own: REJECTED or LEFT, already seen by me
+    const deletedOwned = await prisma.tripParticipant.deleteMany({
+      where: {
+        tripId: { in: myTripIds },
+        status: { in: ['REJECTED', 'LEFT'] },
+        ownerSeen: true
+      }
+    });
+
+    // 3. My seen TRIP_DELETED system notifications
+    const deletedNotifications = await prisma.notification.deleteMany({
+      where: { userId: req.user.id, seen: true }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Read invitations cleared',
+      data: {
+        deletedReceived: deletedReceived.count,
+        deletedOwned: deletedOwned.count,
+        deletedNotifications: deletedNotifications.count
+      }
+    });
+  } catch (error) {
+    console.error('Error clearing read invitations:', error);
+    res.status(500).json({ error: 'Database error', message: 'Unable to clear invitations' });
+  }
+};
+
+/**
  * GET /api/invitations/notifications
  * Check if user has unhandled notifications (pending received or unseen sent responses)
  */
@@ -256,9 +380,14 @@ export const getNotificationCount = async (
     const unseenResponses = await prisma.tripParticipant.count({
       where: {
         tripId: { in: myTripIds },
-        status: { in: ['ACCEPTED', 'REJECTED'] },
+        status: { in: ['ACCEPTED', 'REJECTED', 'LEFT'] },
         ownerSeen: false
       }
+    });
+
+    // Count unseen system notifications (e.g. TRIP_DELETED)
+    const unseenNotifications = await prisma.notification.count({
+      where: { userId: req.user.id, seen: false }
     });
 
     res.status(200).json({
@@ -266,7 +395,8 @@ export const getNotificationCount = async (
       data: {
         pendingReceived,
         unseenResponses,
-        total: pendingReceived + unseenResponses
+        unseenNotifications,
+        total: pendingReceived + unseenResponses + unseenNotifications
       }
     });
   } catch (error) {

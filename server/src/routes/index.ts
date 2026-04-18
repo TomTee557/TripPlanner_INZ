@@ -9,6 +9,7 @@ import participantsRoutes from './participants.routes';
 import profileRoutes from './profile.routes';
 import documentsRoutes from './documents.routes';
 import invitationsRoutes from './invitations.routes';
+import notificationsRoutes from './notifications.routes';
 
 const router = Router();
 
@@ -41,6 +42,9 @@ router.use('/documents', documentsRoutes);
 
 // Invitations routes: /api/invitations/*
 router.use('/invitations', invitationsRoutes);
+
+// Notifications routes: /api/notifications/*
+router.use('/notifications', notificationsRoutes);
 
 // Health check endpoint
 router.get('/health', (_req, res) => {

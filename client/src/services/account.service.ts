@@ -41,5 +41,11 @@ export const declineInvitation = (id: string) =>
 export const confirmInvitation = (id: string) =>
   api.put<ApiSuccessResponse>(`/invitations/${id}/confirm`);
 
+export const markNotificationRead = (id: string) =>
+  api.put<ApiSuccessResponse>(`/notifications/${id}/mark-read`);
+
+export const clearReadInvitations = () =>
+  api.delete<ApiSuccessResponse>('/invitations/clear-read');
+
 export const getNotificationCount = () =>
   api.get<ApiSuccessResponse<NotificationCount>>('/invitations/notifications');

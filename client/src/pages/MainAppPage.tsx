@@ -109,6 +109,8 @@ const MainAppPage = () => {
       dispatch(deleteTripRequest(tripToDelete));
       setIsDeleteConfirmOpen(false);
       setTripToDelete(null);
+      // Refresh notification count after delete (owner notifies participants; participant notifies owner)
+      setTimeout(fetchNotifications, 800);
     }
   };
 
@@ -202,6 +204,7 @@ const MainAppPage = () => {
 
   const isAdmin = user?.role === 'ADMIN';
   const userInitials = user ? `${user.name.charAt(0)}${user.surname.charAt(0)}`.toUpperCase() : '??';
+  const isLeaveAction = tripToDelete ? trips.find((t: Trip) => t.id === tripToDelete)?.isOwner === false : false;
 
   return (
     <div className="main-app">
@@ -319,17 +322,19 @@ const MainAppPage = () => {
         </Modal>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete / Leave Confirmation Modal */}
       <Modal
         isOpen={isDeleteConfirmOpen}
         onClose={cancelDelete}
-        title="Delete Trip"
+        title={isLeaveAction ? 'Leave Trip' : 'Delete Trip'}
         size="small"
         closeOnOverlayClick={false}
       >
         <div style={{ padding: '1rem' }}>
           <p style={{ marginBottom: '1.5rem', fontSize: '1rem', color: '#333' }}>
-            Are you sure you want to delete this trip? This action cannot be undone.
+            {isLeaveAction
+              ? "Are you sure you want to leave this trip? Your data will be removed and you won't be able to rejoin unless invited again."
+              : 'Are you sure you want to delete this trip? This action cannot be undone.'}
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
             <button
@@ -360,7 +365,7 @@ const MainAppPage = () => {
                 fontWeight: '500'
               }}
             >
-              Delete
+              {isLeaveAction ? 'Leave' : 'Delete'}
             </button>
           </div>
         </div>
@@ -374,7 +379,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <ExpensesList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} />}
+        {selectedTrip && <ExpensesList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.isOwner === false || selectedTrip.participants?.some(p => p.status === 'ACCEPTED'))} />}
       </Modal>
 
       {/* Packing List Modal */}

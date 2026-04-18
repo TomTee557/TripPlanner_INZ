@@ -34,7 +34,7 @@ export interface TripParticipant {
   email: string;
   name: string;
   surname: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'LEFT';
 }
 
 export interface Trip {
@@ -306,14 +306,26 @@ export interface ConfirmationInvitation {
   createdAt: string;
 }
 
+export interface TripMessage {
+  id: string;
+  source: 'participant' | 'notification';
+  type: 'ACCEPTED' | 'REJECTED' | 'LEFT' | 'TRIP_DELETED';
+  tripTitle: string;
+  detail: string;
+  seen: boolean;
+  createdAt: string;
+}
+
 export interface InvitationsData {
   received: ReceivedInvitation[];
   sent: SentInvitation[];
   confirmations: ConfirmationInvitation[];
+  messages: TripMessage[];
 }
 
 export interface NotificationCount {
   pendingReceived: number;
   unseenResponses: number;
+  unseenNotifications: number;
   total: number;
 }

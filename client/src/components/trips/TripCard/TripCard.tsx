@@ -27,7 +27,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
   let imagePath = (trip.image || trip.picture || '');
   imagePath = imagePath.replace('/public/assets/', '/').replace('/public/', '/');
 
-  const isGroupTrip = trip.participants && trip.participants.length > 0;
+  const isGroupTrip = trip.isOwner === false || (trip.participants?.some(p => p.status === 'ACCEPTED') ?? false);
 
   return (
     <div className="trip-card">
@@ -111,7 +111,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               <span>Participants</span>
             </button>
           )}
-          {canEdit && onEdit && (
+          {canEdit && onEdit && trip.isOwner !== false && (
             <button
               className="trip-card__button trip-card__button--edit"
               onClick={() => onEdit(trip)}
@@ -120,13 +120,23 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               <img src="/edit.png" alt="Edit" />
             </button>
           )}
-          {canEdit && onDelete && (
+          {canEdit && onDelete && trip.isOwner !== false && (
             <button
               className="trip-card__button trip-card__button--delete"
               onClick={() => onDelete(trip.id)}
               aria-label="Delete trip"
             >
               <img src="/delete.png" alt="Delete" />
+            </button>
+          )}
+          {onDelete && trip.isOwner === false && (
+            <button
+              className="trip-card__button trip-card__button--delete"
+              onClick={() => onDelete(trip.id)}
+              aria-label="Leave trip"
+              title="Leave trip"
+            >
+              <img src="/delete.png" alt="Leave" />
             </button>
           )}
         </div>

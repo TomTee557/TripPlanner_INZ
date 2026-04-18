@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import type { ReceivedInvitation, SentInvitation, ConfirmationInvitation } from '@types';
+import type { ReceivedInvitation, SentInvitation, ConfirmationInvitation, TripMessage } from '@types';
 import {
   getInvitations,
   acceptInvitation,
   declineInvitation,
   confirmInvitation,
+  markNotificationRead,
+  clearReadInvitations,
 } from '@services/account.service';
 
 interface InvitationsTabProps {
@@ -16,6 +18,7 @@ export const InvitationsTab = ({ onNotificationChange, onTripListChange }: Invit
   const [received, setReceived] = useState<ReceivedInvitation[]>([]);
   const [sent, setSent] = useState<SentInvitation[]>([]);
   const [confirmations, setConfirmations] = useState<ConfirmationInvitation[]>([]);
+  const [messages, setMessages] = useState<TripMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -29,6 +32,7 @@ export const InvitationsTab = ({ onNotificationChange, onTripListChange }: Invit
         setReceived(res.data.received);
         setSent(res.data.sent);
         setConfirmations(res.data.confirmations);
+        setMessages(res.data.messages ?? []);
       }
     } catch {
       setError('Failed to load invitations');
@@ -82,15 +86,57 @@ export const InvitationsTab = ({ onNotificationChange, onTripListChange }: Invit
     }
   };
 
+  const handleMarkMessageAsRead = async (msg: TripMessage) => {
+    setActionLoading(msg.id);
+    try {
+      if (msg.source === 'participant') {
+        await confirmInvitation(msg.id);
+      } else {
+        await markNotificationRead(msg.id);
+      }
+      fetchAll();
+      onNotificationChange();
+    } catch {
+      setError('Failed to mark message as read');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const statusConfig: Record<string, { icon: string; label: string; className: string }> = {
     ACCEPTED: { icon: '✅', label: 'Accepted', className: 'accepted' },
     REJECTED: { icon: '❌', label: 'Rejected', className: 'rejected' },
     PENDING: { icon: '⏳', label: 'Pending', className: 'pending' },
+    LEFT: { icon: '➜]', label: 'Left', className: 'left' },
+    TRIP_DELETED: { icon: '🗑️', label: 'Trip deleted', className: 'deleted' },
+  };
+
+  const messageTypeConfig: Record<string, { icon: string; label: string; className: string }> = {
+    ACCEPTED: { icon: '✅', label: 'Accepted your trip', className: 'accepted' },
+    REJECTED: { icon: '❌', label: 'Declined your trip', className: 'rejected' },
+    LEFT: { icon: '➜]', label: 'Left your trip', className: 'left' },
+    TRIP_DELETED: { icon: '🗑️', label: 'Trip deleted', className: 'deleted' },
+  };
+
+  const handleClearRead = async () => {
+    try {
+      await clearReadInvitations();
+      fetchAll();
+      onNotificationChange();
+    } catch {
+      setError('Failed to clear read invitations');
+    }
   };
 
   if (loading) return <p className="invitations-tab__loading">Loading invitations...</p>;
 
   const unreadConfirmations = confirmations.filter((c) => !c.ownerSeen);
+  const unreadMessages = messages.filter((m) => !m.seen);
+
+  const clearableCount =
+    received.filter((r) => r.status === 'REJECTED').length +
+    confirmations.filter((c) => c.status === 'REJECTED' && c.ownerSeen).length +
+    messages.filter((m) => m.seen).length;
 
   return (
     <div className="invitations-tab">
@@ -98,6 +144,11 @@ export const InvitationsTab = ({ onNotificationChange, onTripListChange }: Invit
         <button className="invitations-tab__refresh" onClick={fetchAll}>
           🔄 Refresh Now
         </button>
+        {clearableCount > 0 && (
+          <button className="invitations-tab__clear" onClick={handleClearRead}>
+            🗑 Clear read ({clearableCount})
+          </button>
+        )}
       </div>
 
       {error && <div className="invitations-tab__error">{error}</div>}
@@ -136,6 +187,50 @@ export const InvitationsTab = ({ onNotificationChange, onTripListChange }: Invit
                         disabled={actionLoading === inv.id}
                       >
                         {actionLoading === inv.id ? '...' : '✓ Mark as read'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Messages — LEFT, TRIP_DELETED and other system notifications */}
+      {messages.length > 0 && (
+        <div className="invitations-tab__section">
+          <h3 className="invitations-tab__section-title">
+            Messages ({messages.length})
+            {unreadMessages.length > 0 && (
+              <span className="invitations-tab__section-badge">{unreadMessages.length} new</span>
+            )}
+          </h3>
+          <div className="invitations-tab__list">
+            {messages.map((msg) => {
+              const config = messageTypeConfig[msg.type];
+              return (
+                <div
+                  key={msg.id}
+                  className={`invitations-tab__item ${!msg.seen ? 'invitations-tab__item--highlight' : ''}`}
+                >
+                  <div className="invitations-tab__item-info">
+                    {msg.tripTitle && (
+                      <span className="invitations-tab__item-trip">{msg.tripTitle}</span>
+                    )}
+                    <span className="invitations-tab__item-details">{msg.detail}</span>
+                  </div>
+                  <div className="invitations-tab__item-actions">
+                    <span className={`invitations-tab__status invitations-tab__status--${config.className}`}>
+                      {config.icon} {config.label}
+                    </span>
+                    {!msg.seen && (
+                      <button
+                        className="invitations-tab__btn invitations-tab__btn--confirm"
+                        onClick={() => handleMarkMessageAsRead(msg)}
+                        disabled={actionLoading === msg.id}
+                      >
+                        {actionLoading === msg.id ? '...' : '✓ Mark as read'}
                       </button>
                     )}
                   </div>

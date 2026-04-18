@@ -44,7 +44,27 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Trip Types** - Categorize trips (Business, Leisure, Adventure, Beach, Mountain, City, Cultural, Safari, Cruise, Road Trip, Family, Backpacking, Luxury, Budget)
 - **Trip Filtering** - Search and filter trips by type, date range, or destination
 - **Trip Images** - Visual representation with predefined trip images
-- **Update & Delete** - Full CRUD operations on trips
+- **Update & Delete** - Full CRUD operations on trips; edit button restricted to owners only
+
+### 👥 Group Trips & Invitations
+- **Multi-Participant Trips** - Invite other registered users to join a trip as participants
+- **Invitation Flow** - Owner sends invitations (PENDING) → Participants accept or decline → Owner sees confirmations → Group badge appears on card
+- **Role-Based Access** - Trip owner can edit/delete the trip; participants can only view content and leave
+- **Leave Trip** - Participants can leave a group trip at any time; their expenses, packing items, and todos are removed
+- **Owner Delete with Notifications** - When the owner deletes a group trip, all accepted participants automatically receive a TRIP_DELETED system notification
+- **Private Items** - Expenses, packing items, and todos can be marked as private (visible only to their author in group trips)
+- **Participant Panel** - Dedicated panel showing all current participants with their status
+- **Group Badge** - Visual indicator on trip cards when other accepted participants are present
+
+### 🔔 Notifications & Messaging
+- **Notification Badge** - Live counter in the UI header showing total pending actions (`⚙ Settings` button)
+- **Automatic Polling** - Notification count refreshed automatically every 2 minutes and on login
+- **Invitations Tab** - Dedicated account settings tab with four sections:
+  - **Received** — incoming invitations awaiting response (Accept / Decline)
+  - **Sent** — outgoing PENDING invitations I sent as owner
+  - **Confirmations** — ACCEPTED/REJECTED responses from my invitees (with "Mark as read")
+  - **Messages** — LEFT (someone left my trip) and TRIP_DELETED (my trip was deleted) notifications
+- **Clear Read** - One-click cleanup button removes all acted-on invitations and read notifications from the database; appears only when there is something to clear
 
 ### 💰 Expense Tracking
 - **Multi-Currency Support** - Track expenses in USD, EUR, GBP, PLN, and more
@@ -579,6 +599,79 @@ Toggle completed status.
 
 #### **DELETE** `/api/trips/:tripId/todos/:id`
 Delete todo item.
+
+### Invitations & Notifications Endpoints
+
+All endpoints require authentication (JWT token in Authorization header).
+
+#### **GET** `/api/invitations`
+Returns four arrays for the authenticated user. Called when the user opens the Invitations tab or clicks "Refresh Now".
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "received": [ /* PENDING invitations I received */ ],
+    "sent": [ /* PENDING invitations I sent as owner */ ],
+    "confirmations": [ /* ACCEPTED/REJECTED responses on my trips */ ],
+    "messages": [
+      {
+        "id": "uuid",
+        "source": "participant",
+        "type": "LEFT",
+        "tripTitle": "Summer Vacation",
+        "detail": "John Smith (john@example.com) left your trip.",
+        "seen": false,
+        "createdAt": "2026-04-18T10:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+#### **GET** `/api/invitations/notifications`
+Returns numeric counts for the notification badge. Polled every 2 minutes and on login.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "pendingReceived": 1,
+    "unseenResponses": 2,
+    "unseenNotifications": 0,
+    "total": 3
+  }
+}
+```
+
+#### **PUT** `/api/invitations/:id/accept`
+Accept a received invitation. Sets `status=ACCEPTED` and `ownerSeen=false`.
+
+#### **PUT** `/api/invitations/:id/decline`
+Decline a received invitation. Sets `status=REJECTED` and `ownerSeen=false`.
+
+#### **PUT** `/api/invitations/:id/confirm`
+Trip owner acknowledges an ACCEPTED, REJECTED, or LEFT response. Sets `ownerSeen=true`.
+
+#### **DELETE** `/api/invitations/clear-read`
+Permanently deletes all acted-on invitations and read notifications. Only removes records that are safe to delete (REJECTED invitations, LEFT/REJECTED confirmations seen by owner, seen TRIP_DELETED notifications). Never deletes ACCEPTED or PENDING records.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "deletedReceived": 2,
+    "deletedOwned": 1,
+    "deletedNotifications": 0
+  }
+}
+```
+
+#### **PUT** `/api/notifications/:id/mark-read`
+Mark a system `Notification` record (e.g. TRIP_DELETED) as seen. Only the notification's owner can call this.
 
 ---
 

@@ -307,6 +307,25 @@ export const updateTrip = async (
       }
     });
 
+    // Add new participants if provided
+    const participantIds: number[] = req.body.participants || [];
+    if (participantIds.length > 0) {
+      // Find already existing participant IDs for this trip to avoid duplicates
+      const existing = await prisma.tripParticipant.findMany({
+        where: { tripId: id },
+        select: { userId: true }
+      });
+      const existingIds = new Set(existing.map((p: any) => p.userId));
+
+      const newParticipants = participantIds
+        .filter((uid: number) => uid !== req.user!.id && !existingIds.has(uid))
+        .map((uid: number) => ({ tripId: id, userId: uid, status: 'PENDING' }));
+
+      if (newParticipants.length > 0) {
+        await prisma.tripParticipant.createMany({ data: newParticipants, skipDuplicates: true });
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: 'Trip updated successfully',
@@ -323,7 +342,7 @@ export const updateTrip = async (
 
 /**
  * DELETE /api/trips/:id
- * Delete trip
+ * Delete trip (owner) or leave trip (participant)
  */
 export const deleteTrip = async (
   req: AuthenticatedRequest,
@@ -350,36 +369,65 @@ export const deleteTrip = async (
       return;
     }
 
-    // Check if trip exists and belongs to user
-    const existingTrip = await prisma.trip.findFirst({
-      where: {
-        id: id,
-        userId: req.user.id
+    // Check if user is the owner
+    const ownedTrip = await prisma.trip.findFirst({
+      where: { id, userId: req.user.id },
+      include: {
+        participants: {
+          where: { status: 'ACCEPTED' },
+          include: { user: { select: { id: true, name: true, surname: true } } }
+        }
       }
     });
 
-    if (!existingTrip) {
-      res.status(404).json({
-        error: 'Not found',
-        message: 'Trip not found or access denied'
-      });
+    if (ownedTrip) {
+      // Owner deleting — notify all accepted participants, then cascade delete
+      if (ownedTrip.participants.length > 0) {
+        await prisma.notification.createMany({
+          data: ownedTrip.participants.map((p: any) => ({
+            userId: p.userId,
+            type: 'TRIP_DELETED',
+            message: `Trip "${ownedTrip.title}" has been deleted by the owner.`
+          }))
+        });
+      }
+
+      await prisma.trip.delete({ where: { id } });
+
+      res.status(200).json({ success: true, message: 'Trip deleted successfully' });
       return;
     }
 
-    // Delete trip
-    await prisma.trip.delete({
-      where: { id: id }
+    // Check if user is an accepted participant
+    const participation = await prisma.tripParticipant.findFirst({
+      where: { tripId: id, userId: req.user.id, status: 'ACCEPTED' },
+      include: {
+        trip: { select: { title: true } }
+      }
     });
 
-    res.status(200).json({
-      success: true,
-      message: 'Trip deleted successfully'
-    });
+    if (!participation) {
+      res.status(404).json({ error: 'Not found', message: 'Trip not found or access denied' });
+      return;
+    }
+
+    // Participant leaving — delete their data, set status to LEFT
+    await prisma.$transaction([
+      prisma.expense.deleteMany({ where: { tripId: id, userId: req.user.id } }),
+      prisma.packingItem.deleteMany({ where: { tripId: id, userId: req.user.id } }),
+      prisma.todoItem.deleteMany({ where: { tripId: id, userId: req.user.id } }),
+      prisma.tripParticipant.update({
+        where: { id: participation.id },
+        data: { status: 'LEFT', ownerSeen: false }
+      })
+    ]);
+
+    res.status(200).json({ success: true, message: 'You have left the trip' });
   } catch (error) {
-    console.error('Error deleting trip:', error);
+    console.error('Error deleting/leaving trip:', error);
     res.status(500).json({
       error: 'Database error',
-      message: 'Unable to delete trip. Please try again later.'
+      message: 'Unable to process request. Please try again later.'
     });
   }
 };
