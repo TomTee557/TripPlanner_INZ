@@ -63,8 +63,17 @@ Modern web application for comprehensive trip planning with budget tracking, pac
   - **Received** — incoming invitations awaiting response (Accept / Decline)
   - **Sent** — outgoing PENDING invitations I sent as owner
   - **Confirmations** — ACCEPTED/REJECTED responses from my invitees (with "Mark as read")
-  - **Messages** — LEFT (someone left my trip) and TRIP_DELETED (my trip was deleted) notifications
+  - **Messages** — LEFT, TRIP_DELETED, and TRIP_COMMENT notifications
 - **Clear Read** - One-click cleanup button removes all acted-on invitations and read notifications from the database; appears only when there is something to clear
+
+### 💬 Group Messages (Trip Comments)
+- **In-Trip Chat** — Every group trip has a built-in messages panel inside the trip form (edit mode for owner, read-only view for participants)
+- **Chat-Style UI** — Own messages appear on the right (blue bubble), others on the left (white bubble with avatar initials and author name)
+- **Date & Time** — Each message shows the exact date and time it was written (`dd.mm.yyyy hh:mm`)
+- **Scrollable History** — Messages list has its own scroll with a max height of 340px, keeping the form compact
+- **Delete Message** — Comment author and trip owner can delete any message (× button next to timestamp)
+- **TRIP_COMMENT Notifications** — After sending a message, every other accepted participant and the trip owner receive a `TRIP_COMMENT` system notification visible in the Messages section of the Invitations tab (💬 icon, "New message" label)
+- **View Details Button** — Non-owner participants have a dedicated "Details" button on the trip card that opens the read-only trip form with the messages panel
 
 ### 💰 Expense Tracking
 - **Multi-Currency Support** - Track expenses in USD, EUR, GBP, PLN, and more
@@ -329,14 +338,21 @@ ZDPAI-Project/
 │   │   │   ├── trips.controller.ts  # Trip CRUD operations
 │   │   │   ├── expenses.controller.ts
 │   │   │   ├── packing.controller.ts
-│   │   │   └── todos.controller.ts
+│   │   │   ├── todos.controller.ts
+│   │   │   ├── invitations.controller.ts
+│   │   │   ├── notifications.controller.ts
+│   │   │   └── comments.controller.ts  # Group trip messages
 │   │   │
 │   │   ├── routes/                  # API route definitions
 │   │   │   ├── auth.routes.ts       # /api/auth/*
 │   │   │   ├── trips.routes.ts      # /api/trips/*
 │   │   │   ├── expenses.routes.ts
 │   │   │   ├── packing.routes.ts
-│   │   │   └── todos.routes.ts
+│   │   │   ├── todos.routes.ts
+│   │   │   ├── participants.routes.ts
+│   │   │   ├── invitations.routes.ts
+│   │   │   ├── notifications.routes.ts
+│   │   │   └── comments.routes.ts   # /api/trips/:tripId/comments/*
 │   │   │
 │   │   ├── middleware/              # Express middleware
 │   │   │   ├── auth.middleware.ts   # JWT verification
@@ -395,7 +411,9 @@ ZDPAI-Project/
 │   │   │   ├── trips.service.ts
 │   │   │   ├── expenses.service.ts
 │   │   │   ├── packing.service.ts
-│   │   │   └── todos.service.ts
+│   │   │   ├── todos.service.ts
+│   │   │   ├── account.service.ts   # Profile, invitations, notifications
+│   │   │   └── comments.service.ts  # Group trip messages
 │   │   │
 │   │   ├── hooks/                   # Custom React hooks
 │   │   │   └── useSessionTimer.ts   # Session management
@@ -671,7 +689,67 @@ Permanently deletes all acted-on invitations and read notifications. Only remove
 ```
 
 #### **PUT** `/api/notifications/:id/mark-read`
-Mark a system `Notification` record (e.g. TRIP_DELETED) as seen. Only the notification's owner can call this.
+Mark a system `Notification` record (e.g. TRIP_DELETED, TRIP_COMMENT) as seen. Only the notification's owner can call this.
+
+---
+
+### Comments (Group Messages) Endpoints
+
+All endpoints require authentication. Access is restricted to the trip owner and users with `ACCEPTED` participant status.
+
+#### **GET** `/api/trips/:tripId/comments`
+Returns all messages for a trip in chronological order.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "tripId": "uuid",
+      "message": "I booked the hotel for nights 3–5!",
+      "createdAt": "2026-04-18T14:30:00.000Z",
+      "author": {
+        "id": 5,
+        "name": "John",
+        "surname": "Smith",
+        "email": "john@example.com"
+      }
+    }
+  ]
+}
+```
+
+#### **POST** `/api/trips/:tripId/comments`
+Add a new message. Sends a `TRIP_COMMENT` Notification to all other ACCEPTED participants and the trip owner (excluding the sender). Message is limited to 1000 characters.
+
+**Request Body:**
+```json
+{ "message": "I booked the hotel for nights 3–5!" }
+```
+
+**Response:** `201 Created`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "tripId": "uuid",
+    "message": "I booked the hotel for nights 3–5!",
+    "createdAt": "2026-04-18T14:30:00.000Z",
+    "author": { "id": 5, "name": "John", "surname": "Smith", "email": "john@example.com" }
+  }
+}
+```
+
+#### **DELETE** `/api/trips/:tripId/comments/:commentId`
+Delete a comment. Only the **comment author** or the **trip owner** may delete. Returns `403` otherwise.
+
+**Response:** `200 OK`
+```json
+{ "success": true, "message": "Comment deleted" }
+```
 
 ---
 

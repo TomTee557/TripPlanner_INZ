@@ -27,6 +27,7 @@ const MainAppPage = () => {
 
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
   const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
+  const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
@@ -126,6 +127,16 @@ const MainAppPage = () => {
 
   const handleCloseEditModal = () => {
     setIsEditTripModalOpen(false);
+    setSelectedTrip(null);
+  };
+
+  const handleViewDetails = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setIsViewDetailsModalOpen(true);
+  };
+
+  const handleCloseViewDetails = () => {
+    setIsViewDetailsModalOpen(false);
     setSelectedTrip(null);
   };
 
@@ -276,6 +287,7 @@ const MainAppPage = () => {
             onViewPacking={handleViewPacking}
             onViewTodos={handleViewTodos}
             onViewParticipants={handleViewParticipants}
+            onViewDetails={handleViewDetails}
             canEdit={true}
           />
         </div>
@@ -305,6 +317,26 @@ const MainAppPage = () => {
             initialData={selectedTrip}
             onSubmit={handleEditTrip}
             onCancel={handleCloseEditModal}
+            currentUserId={user?.id}
+          />
+        )}
+      </Modal>
+
+      {/* View Details Modal (read-only for non-owner participants) */}
+      <Modal
+        isOpen={isViewDetailsModalOpen}
+        onClose={handleCloseViewDetails}
+        title={`Trip Details - ${selectedTrip?.title || ''}`}
+        size="large"
+        closeOnOverlayClick={true}
+      >
+        {selectedTrip && (
+          <TripForm
+            initialData={selectedTrip}
+            onSubmit={() => {}}
+            onCancel={handleCloseViewDetails}
+            readOnly={true}
+            currentUserId={user?.id}
           />
         )}
       </Modal>

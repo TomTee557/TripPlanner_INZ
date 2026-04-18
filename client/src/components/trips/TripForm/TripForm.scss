@@ -203,4 +203,189 @@
       flex-direction: column;
     }
   }
+
+  &__comments {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__comments-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__comments-count {
+    background: #007bff;
+    color: white;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.55rem;
+    line-height: 1.4;
+  }
+
+  &__comments-empty {
+    color: #888;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    text-align: center;
+  }
+
+  /* Scrollable messages list — own overflow */
+  &__comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 0.75rem;
+    background: #f4f6fb;
+    border-radius: 0.75rem;
+    border: 1px solid #e0e4ef;
+
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #c0c8e0 transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #c0c8e0;
+      border-radius: 3px;
+    }
+  }
+
+  /* One row = avatar + bubble (or bubble + avatar for own) */
+  &__chat-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+
+    &--own {
+      flex-direction: row-reverse;
+
+      .trip-form__chat-bubble {
+        background: #007bff;
+        color: white;
+        border-radius: 1rem 1rem 0 1rem;
+        align-items: flex-end;
+      }
+
+      .trip-form__chat-date {
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      .trip-form__chat-delete {
+        color: rgba(255, 255, 255, 0.85);
+
+        &:hover {
+          color: #ffe0e0;
+        }
+      }
+    }
+  }
+
+  /* Avatar circle with initials */
+  &__chat-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &--own {
+      background: #0056cc;
+    }
+  }
+
+  /* Message bubble */
+  &__chat-bubble {
+    max-width: 75%;
+    background: white;
+    border-radius: 1rem 1rem 1rem 0;
+    padding: 0.6rem 0.85rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__chat-author {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #007bff;
+  }
+
+  &__chat-text {
+    font-size: 0.9rem;
+    margin: 0;
+    word-break: break-word;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  &__chat-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+  }
+
+  &__chat-date {
+    font-size: 0.7rem;
+    color: #999;
+    flex: 1;
+  }
+
+  &__chat-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c62828;
+    font-size: 1rem;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+      color: #b71c1c;
+    }
+  }
+
+  &__comment-error {
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  &__comment-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__textarea--comment {
+    resize: vertical;
+    min-height: 60px;
+  }
 }

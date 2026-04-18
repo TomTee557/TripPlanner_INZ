@@ -10,6 +10,7 @@ import profileRoutes from './profile.routes';
 import documentsRoutes from './documents.routes';
 import invitationsRoutes from './invitations.routes';
 import notificationsRoutes from './notifications.routes';
+import commentsRoutes from './comments.routes';
 
 const router = Router();
 
@@ -45,6 +46,9 @@ router.use('/invitations', invitationsRoutes);
 
 // Notifications routes: /api/notifications/*
 router.use('/notifications', notificationsRoutes);
+
+// Comments routes: /api/trips/:tripId/comments/*
+router.use('/', commentsRoutes);
 
 // Health check endpoint
 router.get('/health', (_req, res) => {

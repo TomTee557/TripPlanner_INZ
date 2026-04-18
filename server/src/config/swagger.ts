@@ -6,7 +6,24 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: 'Trip Planner API',
       version: '1.0.0',
-      description: 'Comprehensive API documentation for Trip Planner application. Manage trips, expenses, packing lists, and todos with JWT authentication.',
+      description: [
+          'Comprehensive API documentation for Trip Planner application.',
+          '',
+          'Manage trips, expenses, packing lists, todos, group invitations, and group trip messages with JWT authentication.',
+          '',
+          '### Authentication',
+          'All protected endpoints require a Bearer JWT token in the `Authorization` header.',
+          'Obtain a token via `POST /api/auth/login`.',
+          '',
+          '### Key features',
+          '- Full CRUD for trips, expenses, packing lists, and todos',
+          '- Group trips with participant invitations (PENDING → ACCEPTED/REJECTED/LEFT flow)',
+          '- Role-based access: owner can edit/delete; participants can view and leave',
+          '- System notifications (TRIP_DELETED, TRIP_COMMENT) with badge counter',
+          '- Group trip messages (TripComment) — chat-style comments with notifications',
+          '- Per-item privacy on expenses, packing items, and todos in group trips',
+          '- JWT token expiry 15 min with refresh endpoint',
+        ].join('\n'),
       contact: {
         name: 'API Support',
         email: 'support@tripplanner.com',
@@ -255,21 +272,44 @@ const options: swaggerJsdoc.Options = {
         },
         Notification: {
           type: 'object',
-          description: 'System-generated notification (e.g. TRIP_DELETED)',
+          description: 'System-generated notification (e.g. TRIP_DELETED, TRIP_COMMENT)',
           properties: {
             id: { type: 'string', format: 'uuid' },
             userId: { type: 'integer', description: 'Recipient user ID', example: 5 },
             type: {
               type: 'string',
-              enum: ['TRIP_DELETED'],
-              example: 'TRIP_DELETED',
+              enum: ['TRIP_DELETED', 'TRIP_COMMENT'],
+              example: 'TRIP_COMMENT',
             },
             message: {
               type: 'string',
-              example: "Trip 'Summer Vacation' has been deleted by the owner.",
+              example: "john@example.com commented on trip 'Summer Vacation'.",
             },
             seen: { type: 'boolean', example: false },
             createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        TripComment: {
+          type: 'object',
+          description: 'A single chat message posted in a group trip by an accepted participant or the owner',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            tripId: { type: 'string', format: 'uuid' },
+            message: {
+              type: 'string',
+              maxLength: 1000,
+              example: 'I booked the hotel for nights 3–5!',
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+            author: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer', example: 5 },
+                name: { type: 'string', example: 'John' },
+                surname: { type: 'string', example: 'Smith' },
+                email: { type: 'string', format: 'email', example: 'john@example.com' },
+              },
+            },
           },
         },
         TripMessage: {
@@ -280,11 +320,12 @@ const options: swaggerJsdoc.Options = {
             source: {
               type: 'string',
               enum: ['participant', 'notification'],
-              description: '`participant` = from TripParticipant (LEFT); `notification` = from Notification table (TRIP_DELETED)',
+              description: '`participant` = from TripParticipant (LEFT); `notification` = from Notification table (TRIP_DELETED, TRIP_COMMENT)',
             },
             type: {
               type: 'string',
-              enum: ['ACCEPTED', 'REJECTED', 'LEFT', 'TRIP_DELETED'],
+              enum: ['ACCEPTED', 'REJECTED', 'LEFT', 'TRIP_DELETED', 'TRIP_COMMENT'],
+              description: '`ACCEPTED`/`REJECTED`/`LEFT` come from TripParticipant; `TRIP_DELETED`/`TRIP_COMMENT` come from the Notification table',
             },
             tripTitle: { type: 'string', example: 'Summer Vacation' },
             detail: {
@@ -316,7 +357,7 @@ const options: swaggerJsdoc.Options = {
             },
             messages: {
               type: 'array',
-              description: 'LEFT (participant left my trip) and TRIP_DELETED (my trip was deleted) messages',
+              description: 'LEFT (participant left my trip), TRIP_DELETED (my trip was deleted), and TRIP_COMMENT (new group message) notifications',
               items: { $ref: '#/components/schemas/TripMessage' },
             },
           },
@@ -337,7 +378,7 @@ const options: swaggerJsdoc.Options = {
             },
             unseenNotifications: {
               type: 'integer',
-              description: 'Unread TRIP_DELETED system notifications',
+              description: 'Unread system notifications (TRIP_DELETED + TRIP_COMMENT combined)',
               example: 0,
             },
             total: {

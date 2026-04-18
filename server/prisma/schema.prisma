@@ -29,6 +29,7 @@ model User {
   todoItems      TodoItem[]
   documents      UserDocument[]
   notifications  Notification[]
+  tripComments   TripComment[]
   
   @@map("users")
   @@index([email])
@@ -55,6 +56,7 @@ model Trip {
   packingItems PackingItem[]
   todoItems    TodoItem[]
   participants TripParticipant[]
+  comments     TripComment[]
   
   @@map("trips")
   @@index([userId])
@@ -200,6 +202,22 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+  @@index([userId])
+}
+
+model TripComment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tripId    String   @map("trip_id") @db.Uuid
+  userId    Int      @map("user_id")
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("trip_comments")
+  @@index([tripId])
   @@index([userId])
 }
 

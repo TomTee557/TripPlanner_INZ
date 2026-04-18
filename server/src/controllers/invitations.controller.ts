@@ -119,7 +119,7 @@ export const getInvitations = async (
     const formattedNotifications = myNotifications.map((n: any) => ({
       id: n.id,
       source: 'notification' as const,
-      type: n.type as 'TRIP_DELETED',
+      type: n.type as 'TRIP_DELETED' | 'TRIP_COMMENT',
       tripTitle: '',
       detail: n.message,
       seen: n.seen,
@@ -385,7 +385,7 @@ export const getNotificationCount = async (
       }
     });
 
-    // Count unseen system notifications (e.g. TRIP_DELETED)
+    // Count unseen system notifications (e.g. TRIP_DELETED, TRIP_COMMENT)
     const unseenNotifications = await prisma.notification.count({
       where: { userId: req.user.id, seen: false }
     });

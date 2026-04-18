@@ -116,6 +116,7 @@ export const InvitationsTab = ({ onNotificationChange, onTripListChange }: Invit
     REJECTED: { icon: '❌', label: 'Declined your trip', className: 'rejected' },
     LEFT: { icon: '➜]', label: 'Left your trip', className: 'left' },
     TRIP_DELETED: { icon: '🗑️', label: 'Trip deleted', className: 'deleted' },
+    TRIP_COMMENT: { icon: '💬', label: 'New message', className: 'comment' },
   };
 
   const handleClearRead = async () => {

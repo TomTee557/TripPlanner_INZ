@@ -12,10 +12,11 @@ interface TripCardProps {
   onViewPacking?: (trip: Trip) => void;
   onViewTodos?: (trip: Trip) => void;
   onViewParticipants?: (trip: Trip) => void;
+  onViewDetails?: (trip: Trip) => void;
   canEdit?: boolean;
 }
 
-export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking, onViewTodos, onViewParticipants, canEdit = false }: TripCardProps) => {
+export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking, onViewTodos, onViewParticipants, onViewDetails, canEdit = false }: TripCardProps) => {
   const days = calculateDaysBetween(trip.dateFrom, trip.dateTo);
   const tags = parseTags(trip.tags || '');
   
@@ -127,6 +128,16 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               aria-label="Delete trip"
             >
               <img src="/delete.png" alt="Delete" />
+            </button>
+          )}
+          {trip.isOwner === false && onViewDetails && (
+            <button
+              className="trip-card__button trip-card__button--details"
+              onClick={() => onViewDetails(trip)}
+              title="View details"
+            >
+              <img src="/more_vert.png" alt="Details" />
+              <span>Details</span>
             </button>
           )}
           {onDelete && trip.isOwner === false && (

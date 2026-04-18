@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { FormEvent } from 'react';
 import { Input } from '@components/common/Input';
 import { Button } from '@components/common/Button';
@@ -8,8 +8,9 @@ import { CurrencyConverter } from '@components/common/CurrencyConverter';
 import { ParticipantSearch } from '@components/trips/ParticipantSearch/ParticipantSearch';
 import { formatDateToInput } from '@utils/helpers';
 import { tripTypeLabels, availablePictures } from '@utils/constants';
-import type { Trip, CreateTripData, UpdateTripData } from '@types';
+import type { Trip, CreateTripData, UpdateTripData, TripComment } from '@types';
 import type { PictureKey } from '@utils/constants';
+import { getComments, addComment, deleteComment } from '@services/comments.service';
 import './TripForm.scss';
 
 interface ParticipantUser {
@@ -24,10 +25,13 @@ interface TripFormProps {
   onSubmit: (data: CreateTripData | UpdateTripData) => void;
   onCancel: () => void;
   loading?: boolean;
+  readOnly?: boolean;
+  currentUserId?: number;
 }
 
-export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = false }: TripFormProps) => {
+export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = false, readOnly = false, currentUserId }: TripFormProps) => {
   const isEditMode = !!trip;
+  const tripId = trip?.id;
   
   const [formData, setFormData] = useState({
     title: '',
@@ -46,6 +50,51 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
   const [showCurrencyConverter, setShowCurrencyConverter] = useState(false);
   const [showParticipantSearch, setShowParticipantSearch] = useState(false);
   const [participants, setParticipants] = useState<ParticipantUser[]>([]);
+
+  // Comments state (used in readOnly mode and owner edit mode)
+  const [comments, setComments] = useState<TripComment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState('');
+
+  const fetchComments = useCallback(async () => {
+    if (!tripId) return;
+    try {
+      const res = await getComments(tripId);
+      setComments(res.data ?? []);
+    } catch {
+      // silently ignore
+    }
+  }, [tripId]);
+
+  useEffect(() => {
+    if (tripId) fetchComments();
+  }, [tripId, fetchComments]);
+
+  const handleAddComment = async () => {
+    if (!tripId || !newComment.trim()) return;
+    setCommentLoading(true);
+    setCommentError('');
+    try {
+      await addComment(tripId, newComment.trim());
+      setNewComment('');
+      fetchComments();
+    } catch {
+      setCommentError('Failed to send message');
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!tripId) return;
+    try {
+      await deleteComment(tripId, commentId);
+      fetchComments();
+    } catch {
+      setCommentError('Failed to delete message');
+    }
+  };
 
   // Initialize form data when trip changes
   useEffect(() => {
@@ -174,6 +223,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         onChange={(e) => handleInputChange('title', e.target.value)}
         error={errors.title}
         fullWidth
+        disabled={readOnly}
       />
 
       <Input
@@ -182,6 +232,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         onChange={(e) => handleInputChange('country', e.target.value)}
         error={errors.country}
         fullWidth
+        disabled={readOnly}
       />
 
       <div className="trip-form__row">
@@ -192,6 +243,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
           onChange={(e) => handleInputChange('dateFrom', e.target.value)}
           error={errors.dateFrom}
           fullWidth
+          disabled={readOnly}
         />
 
         <Input
@@ -201,6 +253,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
           onChange={(e) => handleInputChange('dateTo', e.target.value)}
           error={errors.dateTo}
           fullWidth
+          disabled={readOnly}
         />
       </div>
 
@@ -212,6 +265,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         onChange={(e) => handleInputChange('price', e.target.value)}
         error={errors.price}
         fullWidth
+        disabled={readOnly}
       />
 
       <Dropdown
@@ -221,17 +275,20 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         onChange={(selected) => handleInputChange('tripType', selected[0] || '')}
         placeholder="Select trip type"
         error={errors.tripType}
+        disabled={readOnly}
       />
 
       <div className="trip-form__group-trip">
         <div className="trip-form__group-trip-row">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowParticipantSearch(true)}
-          >
-            Plan a group trip
-          </Button>
+          {!readOnly && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowParticipantSearch(true)}
+            >
+              Plan a group trip
+            </Button>
+          )}
           {participants.length > 0 && (
             <div className="trip-form__participants-tags">
               {participants.map(p => (
@@ -256,24 +313,28 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         {formData.picture ? (
           <div className="trip-form__picture-preview">
             <img src={formData.picture} alt="Selected" />
-            <Button
-              type="button"
-              variant="secondary"
-              size="small"
-              onClick={() => setShowPictureModal(true)}
-            >
-              Change Picture
-            </Button>
+            {!readOnly && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="small"
+                onClick={() => setShowPictureModal(true)}
+              >
+                Change Picture
+              </Button>
+            )}
           </div>
         ) : (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowPictureModal(true)}
-            fullWidth
-          >
-            Choose Picture
-          </Button>
+          !readOnly && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPictureModal(true)}
+              fullWidth
+            >
+              Choose Picture
+            </Button>
+          )
         )}
         {errors.picture && <span className="trip-form__error">{errors.picture}</span>}
       </div>
@@ -285,6 +346,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={4}
+          disabled={readOnly}
         />
       </div>
 
@@ -293,25 +355,117 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         value={formData.tags}
         onChange={(e) => handleInputChange('tags', e.target.value)}
         fullWidth
+        disabled={readOnly}
       />
 
       <div className="trip-form__actions">
-        <Button 
-          type="button" 
-          variant="secondary" 
-          onClick={() => setShowCurrencyConverter(true)}
-        >
-          Currency Converter
-        </Button>
+        {!readOnly && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setShowCurrencyConverter(true)}
+          >
+            Currency Converter
+          </Button>
+        )}
         <div className="trip-form__actions-right">
           <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+            {readOnly ? 'Close' : 'Cancel'}
           </Button>
-          <Button type="submit" variant="primary" loading={loading}>
-            {isEditMode ? 'Update Trip' : 'Create Trip'}
-          </Button>
+          {!readOnly && (
+            <Button type="submit" variant="primary" loading={loading}>
+              {isEditMode ? 'Update Trip' : 'Create Trip'}
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Comments / Messages section — shown when trip exists */}
+      {tripId && (
+        <div className="trip-form__comments">
+          <h4 className="trip-form__comments-title">
+            Group messages
+            {comments.length > 0 && (
+              <span className="trip-form__comments-count">{comments.length}</span>
+            )}
+          </h4>
+
+          <div className="trip-form__comments-list">
+            {comments.length === 0 ? (
+              <p className="trip-form__comments-empty">No messages yet</p>
+            ) : (
+              comments.map((c) => {
+                const isOwnMessage = currentUserId === c.author.id;
+                const canDelete = isOwnMessage || (trip && trip.isOwner !== false);
+                const initials = `${c.author.name?.[0] ?? ''}${c.author.surname?.[0] ?? ''}`.toUpperCase() || c.author.email[0].toUpperCase();
+                const msgDate = new Date(c.createdAt);
+                const formattedDate = msgDate.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const formattedTime = msgDate.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div
+                    key={c.id}
+                    className={`trip-form__chat-row${isOwnMessage ? ' trip-form__chat-row--own' : ''}`}
+                  >
+                    {!isOwnMessage && (
+                      <div className="trip-form__chat-avatar" title={`${c.author.name} ${c.author.surname}`}>
+                        {initials}
+                      </div>
+                    )}
+                    <div className="trip-form__chat-bubble">
+                      {!isOwnMessage && (
+                        <span className="trip-form__chat-author">
+                          {c.author.name} {c.author.surname}
+                        </span>
+                      )}
+                      <p className="trip-form__chat-text">{c.message}</p>
+                      <div className="trip-form__chat-meta">
+                        <span className="trip-form__chat-date">{formattedDate} {formattedTime}</span>
+                        {canDelete && (
+                          <button
+                            type="button"
+                            className="trip-form__chat-delete"
+                            onClick={() => handleDeleteComment(c.id)}
+                            title="Usuń wiadomość"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {isOwnMessage && (
+                      <div className="trip-form__chat-avatar trip-form__chat-avatar--own" title="Ty">
+                        {initials}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {commentError && <p className="trip-form__comment-error">{commentError}</p>}
+
+          <div className="trip-form__comment-input">
+            <textarea
+              className="trip-form__textarea trip-form__textarea--comment"
+              placeholder="Send a message to the group..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              rows={2}
+              maxLength={1000}
+            />
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleAddComment}
+              loading={commentLoading}
+              disabled={!newComment.trim()}
+            >
+              Send
+            </Button>
+          </div>
+        </div>
+      )}
 
       {showPictureModal && (
         <div className="trip-form__picture-modal" onClick={() => setShowPictureModal(false)}>

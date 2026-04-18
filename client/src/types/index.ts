@@ -309,11 +309,24 @@ export interface ConfirmationInvitation {
 export interface TripMessage {
   id: string;
   source: 'participant' | 'notification';
-  type: 'ACCEPTED' | 'REJECTED' | 'LEFT' | 'TRIP_DELETED';
+  type: 'ACCEPTED' | 'REJECTED' | 'LEFT' | 'TRIP_DELETED' | 'TRIP_COMMENT';
   tripTitle: string;
   detail: string;
   seen: boolean;
   createdAt: string;
+}
+
+export interface TripComment {
+  id: string;
+  tripId: string;
+  message: string;
+  createdAt: string;
+  author: {
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
+  };
 }
 
 export interface InvitationsData {
