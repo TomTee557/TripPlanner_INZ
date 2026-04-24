@@ -119,6 +119,7 @@ export interface Expense {
   expenseDate: string;
   isPrivate: boolean;
   createdAt: string;
+  addedBy?: AddedByUser | null;
 }
 
 export interface CreateExpenseData {

@@ -449,7 +449,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <ExpensesList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.isOwner === false || selectedTrip.participants?.some(p => p.status === 'ACCEPTED'))} />}
+        {selectedTrip && <ExpensesList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.isOwner === false || selectedTrip.participants?.some(p => p.status === 'ACCEPTED'))} currentUserId={user?.id} />}
       </Modal>
 
       {/* Packing List Modal */}
@@ -460,7 +460,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <PackingList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} />}
+        {selectedTrip && <PackingList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} currentUserId={user?.id} />}
       </Modal>
 
       {/* Todo List Modal */}
@@ -471,7 +471,7 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        {selectedTrip && <TodoList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} />}
+        {selectedTrip && <TodoList tripId={selectedTrip.id} isGroupTrip={!!(selectedTrip.participants && selectedTrip.participants.length > 0)} currentUserId={user?.id} />}
       </Modal>
 
       {/* Participants Modal */}

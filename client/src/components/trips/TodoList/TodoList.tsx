@@ -8,9 +8,10 @@ import './TodoList.scss';
 interface TodoListProps {
   tripId: string;
   isGroupTrip?: boolean;
+  currentUserId?: number;
 }
 
-export const TodoList = ({ tripId, isGroupTrip = false }: TodoListProps) => {
+export const TodoList = ({ tripId, isGroupTrip = false, currentUserId }: TodoListProps) => {
   const [items, setItems] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -186,6 +187,13 @@ export const TodoList = ({ tripId, isGroupTrip = false }: TodoListProps) => {
                 {item.dueDate && (
                   <span className="todo-item__due">
                     Due: {new Date(item.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+                {isGroupTrip && item.addedBy && (
+                  <span className="todo-item__added-by">
+                    {item.addedBy.id === currentUserId
+                      ? 'added by me'
+                      : `added by ${item.addedBy.name} ${item.addedBy.surname}`}
                   </span>
                 )}
               </div>

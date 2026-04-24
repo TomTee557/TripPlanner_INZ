@@ -8,9 +8,10 @@ import './ExpensesList.scss';
 interface ExpensesListProps {
   tripId: string;
   isGroupTrip?: boolean;
+  currentUserId?: number;
 }
 
-export const ExpensesList = ({ tripId, isGroupTrip = false }: ExpensesListProps) => {
+export const ExpensesList = ({ tripId, isGroupTrip = false, currentUserId }: ExpensesListProps) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -196,6 +197,13 @@ export const ExpensesList = ({ tripId, isGroupTrip = false }: ExpensesListProps)
                 <span className="expense-item__category">{expense.categoryName}</span>
                 <span className="expense-item__description">{expense.description}</span>
                 <span className="expense-item__date">{expense.expenseDate}</span>
+                {isGroupTrip && expense.addedBy && (
+                  <span className="expense-item__added-by">
+                    {expense.addedBy.id === currentUserId
+                      ? 'added by me'
+                      : `added by ${expense.addedBy.name} ${expense.addedBy.surname}`}
+                  </span>
+                )}
               </div>
               <div className="expense-item__amount">
                 {expense.isPrivate && <span className="expense-item__private-badge" title="Private">🔒</span>}

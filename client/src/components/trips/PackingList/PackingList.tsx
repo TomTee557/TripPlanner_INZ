@@ -8,9 +8,10 @@ import './PackingList.scss';
 interface PackingListProps {
   tripId: string;
   isGroupTrip?: boolean;
+  currentUserId?: number;
 }
 
-export const PackingList = ({ tripId, isGroupTrip = false }: PackingListProps) => {
+export const PackingList = ({ tripId, isGroupTrip = false, currentUserId }: PackingListProps) => {
   const [items, setItems] = useState<PackingItem[]>([]);
   const [categories, setCategories] = useState<PackingCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,6 +185,13 @@ export const PackingList = ({ tripId, isGroupTrip = false }: PackingListProps) =
                 {item.isPrivate && <span title="Private">🔒 </span>}{item.name}
               </span>
               <span className="packing-item__meta">Qty: {item.quantity} | {item.priority}</span>
+              {isGroupTrip && item.addedBy && (
+                <span className="packing-item__added-by">
+                  {item.addedBy.id === currentUserId
+                    ? 'added by me'
+                    : `added by ${item.addedBy.name} ${item.addedBy.surname}`}
+                </span>
+              )}
             </div>
             <button onClick={() => handleDeleteClick(item.id)}>
               <img src="/delete.png" alt="Delete" />

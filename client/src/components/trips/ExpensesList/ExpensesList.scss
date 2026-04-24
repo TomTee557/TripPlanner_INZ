@@ -162,6 +162,12 @@
     color: #999;
   }
 
+  &__added-by {
+    font-size: 0.72rem;
+    color: #bbb;
+    font-style: italic;
+  }
+
   &__amount {
     font-size: 1.1rem;
     font-weight: 600;

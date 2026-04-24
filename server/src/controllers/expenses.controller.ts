@@ -33,7 +33,10 @@ export const getExpenses = async (
         OR: [{ isPrivate: false }, { userId: req.user.id }]
       },
       include: {
-        category: true
+        category: true,
+        user: {
+          select: { id: true, email: true, name: true, surname: true }
+        }
       },
       orderBy: { expenseDate: 'desc' }
     });
@@ -50,7 +53,8 @@ export const getExpenses = async (
       description: expense.description,
       expenseDate: expense.expenseDate.toISOString().split('T')[0],
       isPrivate: expense.isPrivate,
-      createdAt: expense.createdAt.toISOString()
+      createdAt: expense.createdAt.toISOString(),
+      addedBy: expense.user ? { id: expense.user.id, email: expense.user.email, name: expense.user.name, surname: expense.user.surname } : null
     }));
 
     res.status(200).json({
