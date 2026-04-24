@@ -18,7 +18,8 @@ const options: swaggerJsdoc.Options = {
           '### Key features',
           '- Full CRUD for trips, expenses, packing lists, and todos',
           '- Group trips with participant invitations (PENDING → ACCEPTED/REJECTED/LEFT flow)',
-          '- Role-based access: owner can edit/delete; participants can view and leave',
+          '- Role-based access: owner can edit/delete/transfer; participants can view and leave',
+          '- Transfer ownership: owner can hand off a group trip to any accepted participant atomically',
           '- System notifications (TRIP_DELETED, TRIP_COMMENT) with badge counter',
           '- Group trip messages (TripComment) — chat-style comments with notifications',
           '- Per-item privacy on expenses, packing items, and todos in group trips',
@@ -247,6 +248,18 @@ const options: swaggerJsdoc.Options = {
               format: 'date',
               example: '2024-06-15',
               nullable: true,
+            },
+          },
+        },
+        TransferOwnerRequest: {
+          type: 'object',
+          description: 'Payload for transferring trip ownership to an accepted participant',
+          required: ['newOwnerId'],
+          properties: {
+            newOwnerId: {
+              type: 'integer',
+              description: 'User ID of the accepted participant who should become the new owner',
+              example: 5,
             },
           },
         },

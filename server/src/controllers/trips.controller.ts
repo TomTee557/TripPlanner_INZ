@@ -431,3 +431,80 @@ export const deleteTrip = async (
     });
   }
 };
+
+/**
+ * PUT /api/trips/:id/transfer-owner
+ * Transfer trip ownership to an accepted participant.
+ * The current owner's participant record is removed (they leave the trip).
+ * Only the current owner can call this endpoint.
+ */
+export const transferOwner = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Not authenticated', message: 'Authentication required' });
+      return;
+    }
+
+    const { id } = req.params;
+    const { newOwnerId } = req.body as { newOwnerId?: number };
+
+    if (!newOwnerId || typeof newOwnerId !== 'number') {
+      res.status(400).json({ error: 'Validation error', message: 'newOwnerId is required' });
+      return;
+    }
+
+    // Verify caller is the current owner
+    const trip = await prisma.trip.findFirst({
+      where: { id, userId: req.user.id },
+      include: {
+        participants: {
+          where: { userId: newOwnerId, status: 'ACCEPTED' }
+        }
+      }
+    });
+
+    if (!trip) {
+      res.status(403).json({ error: 'Forbidden', message: 'Only the trip owner can transfer ownership' });
+      return;
+    }
+
+    // New owner must be an accepted participant
+    if (trip.participants.length === 0) {
+      res.status(400).json({ error: 'Validation error', message: 'The selected user is not an accepted participant of this trip' });
+      return;
+    }
+
+    // Cannot transfer to yourself
+    if (newOwnerId === req.user.id) {
+      res.status(400).json({ error: 'Validation error', message: 'You are already the owner' });
+      return;
+    }
+
+    const participantRecord = trip.participants[0];
+
+    // Atomically: update trip owner + remove the new owner's participant record + remove old owner's participant record (if any)
+    await prisma.$transaction([
+      // Set new owner on trip
+      prisma.trip.update({
+        where: { id },
+        data: { userId: newOwnerId }
+      }),
+      // Remove new owner's participant entry (they are now the owner, not a participant)
+      prisma.tripParticipant.delete({
+        where: { id: participantRecord.id }
+      }),
+      // Remove old owner's participant entry if it exists (clean up any stale record)
+      prisma.tripParticipant.deleteMany({
+        where: { tripId: id, userId: req.user.id }
+      })
+    ]);
+
+    res.status(200).json({ success: true, message: 'Ownership transferred successfully' });
+  } catch (error) {
+    console.error('Error transferring trip ownership:', error);
+    res.status(500).json({ error: 'Database error', message: 'Unable to transfer ownership' });
+  }
+};

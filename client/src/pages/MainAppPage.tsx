@@ -16,6 +16,7 @@ import { ExpensesList } from '@components/trips/ExpensesList/ExpensesList';
 import { PackingList } from '@components/trips/PackingList/PackingList';
 import { TodoList } from '@components/trips/TodoList/TodoList';
 import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
+import { TransferOwnerDialog } from '@components/trips/TransferOwnerDialog/TransferOwnerDialog';
 import { getNotificationCount } from '@services/account.service';
 import '@styles/mainApp.scss';
 
@@ -30,6 +31,7 @@ const MainAppPage = () => {
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isTransferOwnerOpen, setIsTransferOwnerOpen] = useState(false);
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
   const [isPackingModalOpen, setIsPackingModalOpen] = useState(false);
   const [isTodosModalOpen, setIsTodosModalOpen] = useState(false);
@@ -101,7 +103,29 @@ const MainAppPage = () => {
   };
 
   const handleDeleteTrip = (tripId: string) => {
+    const trip = trips.find((t: Trip) => t.id === tripId);
+    // If owner and there are accepted participants — show transfer dialog first
+    if (trip && trip.isOwner !== false) {
+      const hasAcceptedParticipants = trip.participants?.some((p) => p.status === 'ACCEPTED');
+      if (hasAcceptedParticipants) {
+        setTripToDelete(tripId);
+        setIsTransferOwnerOpen(true);
+        return;
+      }
+    }
     setTripToDelete(tripId);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleTransferOwnerSuccess = () => {
+    setIsTransferOwnerOpen(false);
+    setTripToDelete(null);
+    dispatch(fetchTripsRequest());
+    setTimeout(fetchNotifications, 800);
+  };
+
+  const handleDeleteFromTransferDialog = () => {
+    setIsTransferOwnerOpen(false);
     setIsDeleteConfirmOpen(true);
   };
 
@@ -117,6 +141,7 @@ const MainAppPage = () => {
 
   const cancelDelete = () => {
     setIsDeleteConfirmOpen(false);
+    setIsTransferOwnerOpen(false);
     setTripToDelete(null);
   };
 
@@ -353,6 +378,19 @@ const MainAppPage = () => {
           <UserManagement />
         </Modal>
       )}
+
+      {/* Transfer Ownership Dialog */}
+      {isTransferOwnerOpen && tripToDelete && (() => {
+        const trip = trips.find((t: Trip) => t.id === tripToDelete);
+        return trip ? (
+          <TransferOwnerDialog
+            trip={trip}
+            onTransferred={handleTransferOwnerSuccess}
+            onDeleteInstead={handleDeleteFromTransferDialog}
+            onCancel={cancelDelete}
+          />
+        ) : null;
+      })()}
 
       {/* Delete / Leave Confirmation Modal */}
       <Modal

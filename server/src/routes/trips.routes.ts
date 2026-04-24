@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTrips, getTripById, createTrip, updateTrip, deleteTrip } from '../controllers/trips.controller';
+import { getTrips, getTripById, createTrip, updateTrip, deleteTrip, transferOwner } from '../controllers/trips.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -242,5 +242,45 @@ router.put('/:id', updateTrip);
  *         description: Internal server error
  */
 router.delete('/:id', deleteTrip);
+
+/**
+ * @swagger
+ * /api/trips/{id}/transfer-owner:
+ *   put:
+ *     tags:
+ *       - Trips
+ *     summary: Transfer trip ownership to an accepted participant
+ *     description: Only the current owner can call this. The new owner must be an ACCEPTED participant. After transfer the old owner is removed from the trip.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [newOwnerId]
+ *             properties:
+ *               newOwnerId:
+ *                 type: integer
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Ownership transferred successfully
+ *       400:
+ *         description: Validation error (not a participant, same user, missing field)
+ *       403:
+ *         description: Caller is not the trip owner
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/:id/transfer-owner', transferOwner);
 
 export default router;

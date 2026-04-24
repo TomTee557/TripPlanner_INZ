@@ -52,6 +52,7 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Role-Based Access** - Trip owner can edit/delete the trip; participants can only view content and leave
 - **Leave Trip** - Participants can leave a group trip at any time; their expenses, packing items, and todos are removed
 - **Owner Delete with Notifications** - When the owner deletes a group trip, all accepted participants automatically receive a TRIP_DELETED system notification
+- **Transfer Ownership** - Before deleting a group trip the owner is offered a choice: transfer ownership to one of the accepted participants (the new owner takes over, the old owner leaves the trip) or delete the trip for everyone; a dedicated dialog with a participant dropdown makes the flow explicit
 - **Private Items** - Expenses, packing items, and todos can be marked as private (visible only to their author in group trips)
 - **Participant Panel** - Dedicated panel showing all current participants with their status
 - **Group Badge** - Visual indicator on trip cards when other accepted participants are present
@@ -574,7 +575,20 @@ Create new trip.
 Update existing trip.
 
 #### **DELETE** `/api/trips/:id`
-Delete trip.
+Delete trip (owner) or leave trip (participant). When the owner deletes a trip that has accepted participants the frontend shows the `TransferOwnerDialog` first.
+
+#### **PUT** `/api/trips/:id/transfer-owner`
+Transfer trip ownership to an accepted participant. Atomically updates the owner field, removes the new owner's participant record, and removes any stale participant record of the old owner. Only the current owner can call this endpoint.
+
+**Request Body:**
+```json
+{ "newOwnerId": 5 }
+```
+
+**Response:**
+```json
+{ "success": true, "message": "Ownership transferred successfully" }
+```
 
 ### Expenses Endpoints
 
