@@ -159,7 +159,11 @@ export const addComment = async (
         }
       }
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2003') {
+      res.status(404).json({ error: 'Not found', message: 'This trip no longer exists — it may have been deleted by the owner.' });
+      return;
+    }
     console.error('Error adding comment:', error);
     res.status(500).json({ error: 'Database error', message: 'Unable to add comment' });
   }

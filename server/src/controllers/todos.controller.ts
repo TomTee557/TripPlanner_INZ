@@ -132,7 +132,11 @@ export const createTodoItem = async (
         isPrivate: todoItem.isPrivate
       }
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2003') {
+      res.status(404).json({ error: 'Not found', message: 'This trip no longer exists — it may have been deleted by the owner.' });
+      return;
+    }
     console.error('Error creating todo item:', error);
     res.status(500).json({
       error: 'Database error',
@@ -203,7 +207,11 @@ export const updateTodoItem = async (
         priority: updatedItem.priority
       }
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2003') {
+      res.status(404).json({ error: 'Not found', message: 'This trip no longer exists — it may have been deleted by the owner.' });
+      return;
+    }
     console.error('Error updating todo item:', error);
     res.status(500).json({
       error: 'Database error',
