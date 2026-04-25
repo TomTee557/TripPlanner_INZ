@@ -3,6 +3,8 @@ import type { Expense, ExpenseCategory, CreateExpenseData } from '../../../types
 import * as expensesService from '../../../services/expenses.service';
 import { ErrorNotification } from '../../common/ErrorNotification/ErrorNotification';
 import { ConfirmDialog } from '../../common/ConfirmDialog/ConfirmDialog';
+import { Modal } from '@components/common/Modal';
+import { CurrencyConverter } from '@components/common/CurrencyConverter';
 import './ExpensesList.scss';
 
 interface ExpensesListProps {
@@ -18,6 +20,7 @@ export const ExpensesList = ({ tripId, isGroupTrip = false, currentUserId }: Exp
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [showCurrencyConverter, setShowCurrencyConverter] = useState(false);
   const [formData, setFormData] = useState<CreateExpenseData>({
     categoryId: 0,
     amount: 0,
@@ -111,10 +114,15 @@ export const ExpensesList = ({ tripId, isGroupTrip = false, currentUserId }: Exp
       <div className="expenses-list">
         <div className="expenses-list__header">
           <h3>Expenses</h3>
-        <button className="expenses-list__add-btn" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancel' : '+ Add Expense'}
-        </button>
-      </div>
+          <div className="expenses-list__header-actions">
+            <button className="expenses-list__converter-btn" onClick={() => setShowCurrencyConverter(true)}>
+            Currency Converter
+            </button>
+            <button className="expenses-list__add-btn" onClick={() => setShowForm(!showForm)}>
+              {showForm ? 'Cancel' : '+ Add Expense'}
+            </button>
+          </div>
+        </div>
 
       {showForm && (
         <form className="expenses-list__form" onSubmit={handleSubmit}>
@@ -220,6 +228,16 @@ export const ExpensesList = ({ tripId, isGroupTrip = false, currentUserId }: Exp
         )}
       </div>
     </div>
+
+      <Modal
+        isOpen={showCurrencyConverter}
+        onClose={() => setShowCurrencyConverter(false)}
+        title="Currency Converter"
+        size="medium"
+        closeOnOverlayClick={false}
+      >
+        <CurrencyConverter onClose={() => setShowCurrencyConverter(false)} />
+      </Modal>
     </>
   );
 };
