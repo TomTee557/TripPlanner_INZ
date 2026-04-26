@@ -110,4 +110,26 @@
   &__item-status-label {
     line-height: 1;
   }
+
+  &__remove-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #aaa;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    margin-left: 0.25rem;
+
+    &:hover {
+      background: #fdecea;
+      color: #c62828;
+    }
+  }
 }

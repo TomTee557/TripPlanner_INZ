@@ -36,6 +36,15 @@ export const SearchPanel = ({
     onSearch(newFilters);
   };
 
+  const handleCheckboxChange = (field: keyof TripFilters, checked: boolean) => {
+    const newFilters = {
+      ...filters,
+      [field]: checked || undefined
+    };
+    setFilters(newFilters);
+    onSearch(newFilters);
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSearch(filters);
@@ -117,6 +126,18 @@ export const SearchPanel = ({
             value={filters.tags || ''}
             onChange={(e) => handleInputChange('tags', e.target.value)}
           />
+        </div>
+
+        <div className="main-app__field main-app__field--checkbox">
+          <label className="main-app__checkbox-label">
+            <input
+              type="checkbox"
+              className="main-app__checkbox"
+              checked={filters.groupOnly || false}
+              onChange={(e) => handleCheckboxChange('groupOnly', e.target.checked)}
+            />
+            Group trips only
+          </label>
         </div>
         
         <div className="main-app__button-group">

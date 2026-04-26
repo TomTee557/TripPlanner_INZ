@@ -28,7 +28,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
   let imagePath = (trip.image || trip.picture || '');
   imagePath = imagePath.replace('/public/assets/', '/').replace('/public/', '/');
 
-  const isGroupTrip = trip.isOwner === false || (trip.participants?.some(p => p.status === 'ACCEPTED') ?? false);
+  const isGroupTrip = trip.isOwner === false || ((trip.participants?.length ?? 0) > 0);
 
   return (
     <div className="trip-card">

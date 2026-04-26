@@ -46,6 +46,7 @@ export const TripList = ({
     );
   }
 
+
   return (
     <div className="trip-list">
       {trips.map((trip) => (

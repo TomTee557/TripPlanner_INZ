@@ -187,9 +187,30 @@ export const removeParticipant = async (
       return;
     }
 
-    await prisma.tripParticipant.delete({
-      where: { id: participantId }
-    });
+    const { userId: participantUserId } = participant;
+
+    await prisma.$transaction([
+      // Remove participant's private/public expenses for this trip
+      prisma.expense.deleteMany({
+        where: { tripId, userId: participantUserId }
+      }),
+      // Remove participant's packing items for this trip
+      prisma.packingItem.deleteMany({
+        where: { tripId, userId: participantUserId }
+      }),
+      // Remove participant's todo items for this trip
+      prisma.todoItem.deleteMany({
+        where: { tripId, userId: participantUserId }
+      }),
+      // Remove participant's comments for this trip
+      prisma.tripComment.deleteMany({
+        where: { tripId, userId: participantUserId }
+      }),
+      // Finally remove the participant record itself
+      prisma.tripParticipant.delete({
+        where: { id: participantId }
+      })
+    ]);
 
     res.status(200).json({
       success: true,

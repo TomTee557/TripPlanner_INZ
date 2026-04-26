@@ -95,6 +95,7 @@ export interface TripFilters {
   tags?: string;
   dateFrom?: string;
   dateTo?: string;
+  groupOnly?: boolean;
 }
 
 // Expense types

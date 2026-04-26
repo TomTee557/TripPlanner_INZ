@@ -18,6 +18,7 @@ import { TodoList } from '@components/trips/TodoList/TodoList';
 import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
 import { TransferOwnerDialog } from '@components/trips/TransferOwnerDialog/TransferOwnerDialog';
 import { getNotificationCount } from '@services/account.service';
+import api from '@services/api';
 import '@styles/mainApp.scss';
 
 const MainAppPage = () => {
@@ -205,6 +206,22 @@ const MainAppPage = () => {
     setSelectedTrip(null);
   };
 
+  const handleRemoveParticipant = async (participantId: string) => {
+    if (!selectedTrip) return;
+    try {
+      await api.delete(`/trips/${selectedTrip.id}/participants/${participantId}`);
+      dispatch(fetchTripsRequest());
+      // Update modal data immediately so list refreshes without closing
+      setSelectedTrip((prev) =>
+        prev
+          ? { ...prev, participants: (prev.participants || []).filter((p) => p.id !== participantId) }
+          : prev
+      );
+    } catch (error: any) {
+      console.error('Failed to remove participant:', error);
+    }
+  };
+
   // Filter trips based on search criteria
   const filteredTrips = trips.filter((trip: Trip) => {
     if (filters.title && trip.title && !trip.title.toLowerCase().includes(filters.title.toLowerCase())) {
@@ -229,6 +246,9 @@ const MainAppPage = () => {
       return false;
     }
     if (filters.dateTo && trip.dateTo && trip.dateTo > filters.dateTo) {
+      return false;
+    }
+    if (filters.groupOnly && !(trip.participants && trip.participants.length > 0)) {
       return false;
     }
     return true;
@@ -487,6 +507,8 @@ const MainAppPage = () => {
             participants={selectedTrip.participants}
             tripTitle={selectedTrip.title}
             owner={selectedTrip.owner}
+            isOwner={selectedTrip.isOwner}
+            onRemoveParticipant={handleRemoveParticipant}
           />
         )}
       </Modal>

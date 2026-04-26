@@ -12,6 +12,8 @@ interface ParticipantsListProps {
   participants: TripParticipant[];
   tripTitle: string;
   owner?: Owner | null;
+  isOwner?: boolean;
+  onRemoveParticipant?: (participantId: string) => void;
 }
 
 const statusConfig: Record<string, { icon: string; label: string; className: string }> = {
@@ -20,7 +22,7 @@ const statusConfig: Record<string, { icon: string; label: string; className: str
   PENDING: { icon: '⏳', label: 'Pending', className: 'pending' },
 };
 
-export const ParticipantsList = ({ participants, tripTitle, owner }: ParticipantsListProps) => {
+export const ParticipantsList = ({ participants, tripTitle, owner, isOwner = false, onRemoveParticipant }: ParticipantsListProps) => {
   const visibleParticipants = participants.filter((p) => p.status !== 'REJECTED');
   const totalCount = (owner ? 1 : 0) + visibleParticipants.length;
 
@@ -79,6 +81,15 @@ export const ParticipantsList = ({ participants, tripTitle, owner }: Participant
                 <span className="participants-list__item-status-icon">{config.icon}</span>
                 <span className="participants-list__item-status-label">{config.label}</span>
               </div>
+              {isOwner && onRemoveParticipant && (
+                <button
+                  className="participants-list__remove-btn"
+                  onClick={() => onRemoveParticipant(participant.id)}
+                  title="Remove participant"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           );
         })}
