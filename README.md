@@ -97,6 +97,14 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Completion Tracking** - Mark tasks as completed with progress visualization
 - **Overdue Detection** - Automatic detection and highlighting of overdue tasks
 
+### 🪪 Travel Documents
+- **Document Storage** - Store passports, visas, ID cards, insurance, vaccination cards, driving licences, and other documents
+- **Expiry Tracking** - Each document shows its expiration date with colour-coded status: green (valid), orange (expiring soon), red (expired)
+- **Smart Warning Thresholds** - Important document types (Passport, ID Card, Visa, Insurance, Vaccination Card, Driving License) trigger a warning 6 months before expiry; other types warn 30 days before
+- **Badge on Settings** - Orange `!` badge appears on the ⚙ Settings button in the navbar whenever at least one document is within its warning window
+- **Badge on Documents Tab** - The Documents tab inside Account Settings shows the same orange `!` badge so the user knows where to look
+- **Full CRUD** - Add, edit (inline form per row), and delete documents; all operations refresh the expiry badge immediately
+
 ### 🎨 User Experience
 - **Custom Notifications** - Non-intrusive error notifications with auto-close (5 seconds)
 - **Confirmation Dialogs** - Custom confirmation popups for destructive actions
@@ -763,6 +771,74 @@ Delete a comment. Only the **comment author** or the **trip owner** may delete. 
 **Response:** `200 OK`
 ```json
 { "success": true, "message": "Comment deleted" }
+```
+
+---
+
+### Documents Endpoints
+
+All endpoints require authentication (JWT token in Authorization header).
+
+#### **GET** `/api/documents/expiring-soon`
+Returns whether any of the authenticated user's documents is expiring within its warning window. Used to drive the orange `!` badge in the UI. Must be listed **before** `GET /api/documents/:id` in the router so the literal path `expiring-soon` is not mistaken for an `:id` parameter.
+
+**Warning thresholds:**
+| Document type | Warning window |
+|---|---|
+| Passport, ID Card, Visa, Insurance, Vaccination Card, Driving License | 6 months |
+| Other | 30 days |
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": { "hasExpiring": true }
+}
+```
+
+#### **GET** `/api/documents`
+Get all documents for the authenticated user, ordered by expiration date ascending.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "documentType": "Passport",
+      "description": "Passport number AB123456",
+      "expirationDate": "2030-05-01",
+      "createdAt": "2026-01-10T09:00:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+#### **POST** `/api/documents`
+Add a new document.
+
+**Request Body:**
+```json
+{
+  "documentType": "Passport",
+  "description": "Passport number AB123456",
+  "expirationDate": "2030-05-01"
+}
+```
+
+**Response:** `201 Created` — returns the created `UserDocument` object.
+
+#### **PUT** `/api/documents/:id`
+Update an existing document. Only the document owner can call this. Accepts the same body as `POST`. Returns the updated `UserDocument`.
+
+#### **DELETE** `/api/documents/:id`
+Delete a document. Only the document owner can call this.
+
+**Response:** `200 OK`
+```json
+{ "success": true, "message": "Document deleted successfully" }
 ```
 
 ---

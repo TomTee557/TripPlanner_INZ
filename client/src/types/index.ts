@@ -256,6 +256,16 @@ export interface CreateDocumentData {
   expirationDate: string;
 }
 
+export interface UpdateDocumentData {
+  documentType: string;
+  description?: string;
+  expirationDate: string;
+}
+
+export interface DocumentsExpiringSoon {
+  hasExpiring: boolean;
+}
+
 // Invitation types
 export interface ReceivedInvitation {
   id: string;

@@ -23,6 +23,7 @@ const options: swaggerJsdoc.Options = {
           '- System notifications (TRIP_DELETED, TRIP_COMMENT) with badge counter',
           '- Group trip messages (TripComment) — chat-style comments with notifications',
           '- Per-item privacy on expenses, packing items, and todos in group trips',
+          '- Travel documents management with expiry tracking (6-month warning for passports/visas, 30-day for others)',
           '- JWT token expiry 15 min with refresh endpoint',
         ].join('\n'),
       contact: {
@@ -398,6 +399,41 @@ const options: swaggerJsdoc.Options = {
               type: 'integer',
               description: 'Sum of all three — displayed as the badge number',
               example: 3,
+            },
+          },
+        },
+        UserDocument: {
+          type: 'object',
+          description: 'A single travel document belonging to a user',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            documentType: {
+              type: 'string',
+              enum: ['Passport', 'ID Card', 'Visa', 'Insurance', 'Vaccination Card', 'Driving License', 'Other'],
+              example: 'Passport',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              example: 'Passport number AB123456',
+            },
+            expirationDate: {
+              type: 'string',
+              format: 'date',
+              example: '2030-05-01',
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        DocumentsExpiringSoon: {
+          type: 'object',
+          description: 'Result of the expiring-soon check. True when at least one document is within its warning window.',
+          properties: {
+            hasExpiring: {
+              type: 'boolean',
+              description:
+                'True if any document expires within 6 months (Passport/ID/Visa/Insurance/Vaccination/Driving License) or within 30 days (Other)',
+              example: true,
             },
           },
         },

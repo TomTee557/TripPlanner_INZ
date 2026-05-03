@@ -4,6 +4,8 @@ import type {
   UserProfile,
   UserDocument,
   CreateDocumentData,
+  UpdateDocumentData,
+  DocumentsExpiringSoon,
   InvitationsData,
   NotificationCount
 } from '@types';
@@ -25,8 +27,14 @@ export const getDocuments = () =>
 export const createDocument = (data: CreateDocumentData) =>
   api.post<ApiSuccessResponse<UserDocument>>('/documents', data);
 
+export const updateDocument = (id: string, data: UpdateDocumentData) =>
+  api.put<ApiSuccessResponse<UserDocument>>(`/documents/${id}`, data);
+
 export const deleteDocument = (id: string) =>
   api.delete<ApiSuccessResponse>(`/documents/${id}`);
+
+export const getExpiringSoon = () =>
+  api.get<ApiSuccessResponse<DocumentsExpiringSoon>>('/documents/expiring-soon');
 
 // Invitations
 export const getInvitations = () =>

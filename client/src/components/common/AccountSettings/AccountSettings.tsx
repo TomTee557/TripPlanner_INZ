@@ -11,6 +11,8 @@ interface AccountSettingsProps {
   notificationCount: number;
   onNotificationChange: () => void;
   onTripListChange: () => void;
+  hasExpiringDocuments?: boolean;
+  onExpiringDocumentsChange?: (hasExpiring: boolean) => void;
 }
 
 const tabs: { key: TabKey; label: string }[] = [
@@ -20,7 +22,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: 'invitations', label: 'Invitations' },
 ];
 
-export const AccountSettings = ({ notificationCount, onNotificationChange, onTripListChange }: AccountSettingsProps) => {
+export const AccountSettings = ({ notificationCount, onNotificationChange, onTripListChange, hasExpiringDocuments = false, onExpiringDocumentsChange }: AccountSettingsProps) => {
   const [activeTab, setActiveTab] = useState<TabKey>('documents');
 
   return (
@@ -36,12 +38,15 @@ export const AccountSettings = ({ notificationCount, onNotificationChange, onTri
             {tab.key === 'invitations' && notificationCount > 0 && (
               <span className="account-settings__tab-badge">{notificationCount}</span>
             )}
+            {tab.key === 'documents' && hasExpiringDocuments && (
+              <span className="account-settings__tab-badge account-settings__tab-badge--warn">!</span>
+            )}
           </button>
         ))}
       </nav>
 
       <div className="account-settings__content">
-        {activeTab === 'documents' && <DocumentsTab />}
+        {activeTab === 'documents' && <DocumentsTab onExpiringChange={onExpiringDocumentsChange} />}
         {activeTab === 'about' && <AboutMeTab />}
         {activeTab === 'settings' && <SettingsTab />}
         {activeTab === 'invitations' && <InvitationsTab onNotificationChange={onNotificationChange} onTripListChange={onTripListChange} />}

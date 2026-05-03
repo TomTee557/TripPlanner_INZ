@@ -17,7 +17,7 @@ import { PackingList } from '@components/trips/PackingList/PackingList';
 import { TodoList } from '@components/trips/TodoList/TodoList';
 import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
 import { TransferOwnerDialog } from '@components/trips/TransferOwnerDialog/TransferOwnerDialog';
-import { getNotificationCount } from '@services/account.service';
+import { getNotificationCount, getExpiringSoon } from '@services/account.service';
 import api from '@services/api';
 import '@styles/mainApp.scss';
 
@@ -43,6 +43,16 @@ const MainAppPage = () => {
   const [filters, setFilters] = useState<TripFilters>({});
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(true); // Desktop always true, mobile controlled
   const [notificationCount, setNotificationCount] = useState(0);
+  const [hasExpiringDocuments, setHasExpiringDocuments] = useState(false);
+
+  const fetchExpiringSoon = useCallback(async () => {
+    try {
+      const res = await getExpiringSoon();
+      setHasExpiringDocuments(res.data?.hasExpiring ?? false);
+    } catch {
+      // non-critical
+    }
+  }, []);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -64,10 +74,11 @@ const MainAppPage = () => {
       dispatch(fetchTripsRequest());
       // Fetch notifications immediately and every 2 minutes
       fetchNotifications();
+      fetchExpiringSoon();
       const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated, navigate, dispatch, fetchNotifications]);
+    }, [isAuthenticated, navigate, dispatch, fetchNotifications, fetchExpiringSoon]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -76,8 +87,6 @@ const MainAppPage = () => {
 
   const handleSearch = (newFilters: TripFilters) => {
     setFilters(newFilters);
-    // In a real app, you'd dispatch a filtered fetch request
-    // For now, we'll filter client-side in TripList component
   };
 
   const handleClearFilters = () => {
@@ -297,6 +306,9 @@ const MainAppPage = () => {
               ⚙ Settings
               {notificationCount > 0 && (
                 <span className="header-account__badge">{notificationCount}</span>
+              )}
+              {hasExpiringDocuments && (
+                <span className="header-account__badge header-account__badge--warn">!</span>
               )}
             </button>
           </div>
@@ -525,6 +537,8 @@ const MainAppPage = () => {
           notificationCount={notificationCount}
           onNotificationChange={fetchNotifications}
           onTripListChange={() => dispatch(fetchTripsRequest())}
+          hasExpiringDocuments={hasExpiringDocuments}
+          onExpiringDocumentsChange={setHasExpiringDocuments}
         />
       </Modal>
     </div>
