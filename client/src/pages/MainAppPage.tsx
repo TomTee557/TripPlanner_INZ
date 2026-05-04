@@ -260,6 +260,13 @@ const MainAppPage = () => {
     if (filters.groupOnly && !(trip.participants && trip.participants.length > 0)) {
       return false;
     }
+    const isArchival = trip.dateTo ? new Date(trip.dateTo) < new Date() : false;
+    if (filters.archiveFilter === 'archive_only' && !isArchival) {
+      return false;
+    }
+    if (filters.archiveFilter === 'no_archive' && isArchival) {
+      return false;
+    }
     return true;
   });
 

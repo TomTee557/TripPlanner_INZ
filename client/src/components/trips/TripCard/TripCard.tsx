@@ -29,6 +29,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
   imagePath = imagePath.replace('/public/assets/', '/').replace('/public/', '/');
 
   const isGroupTrip = trip.isOwner === false || ((trip.participants?.length ?? 0) > 0);
+  const isArchival = trip.dateTo ? new Date(trip.dateTo) < new Date() : false;
 
   return (
     <div className="trip-card">
@@ -39,6 +40,9 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
         <span className="trip-card__type">{tripTypeLabel}</span>
         {isGroupTrip && (
           <span className="trip-card__group-badge">Group trip</span>
+        )}
+        {isArchival && (
+          <span className={`trip-card__archival-badge${isGroupTrip ? ' trip-card__archival-badge--below' : ''}`}>Archival</span>
         )}
       </div>
       
@@ -117,6 +121,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               className="trip-card__button trip-card__button--edit"
               onClick={() => onEdit(trip)}
               aria-label="Edit trip"
+              title="Edit trip"
             >
               <img src="/edit.png" alt="Edit" />
             </button>
@@ -126,6 +131,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
               className="trip-card__button trip-card__button--delete"
               onClick={() => onDelete(trip.id)}
               aria-label="Delete trip"
+              title="Delete trip"
             >
               <img src="/delete.png" alt="Delete" />
             </button>

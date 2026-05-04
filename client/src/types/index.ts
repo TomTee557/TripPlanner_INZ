@@ -88,6 +88,8 @@ export interface UpdateTripData {
   description?: string;
 }
 
+export type ArchiveFilter = 'archive_only' | 'no_archive' | undefined;
+
 export interface TripFilters {
   title?: string;
   country?: string;
@@ -96,6 +98,7 @@ export interface TripFilters {
   dateFrom?: string;
   dateTo?: string;
   groupOnly?: boolean;
+  archiveFilter?: ArchiveFilter;
 }
 
 // Expense types

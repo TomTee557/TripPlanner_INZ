@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Dropdown } from '@components/common/Dropdown';
 import { tripTypeLabels } from '@utils/constants';
-import type { TripFilters } from '@types';
+import type { TripFilters, ArchiveFilter } from '@types';
 import './SearchPanel.scss';
 
 interface SearchPanelProps {
@@ -125,6 +125,25 @@ export const SearchPanel = ({
             placeholder="Holiday"
             value={filters.tags || ''}
             onChange={(e) => handleInputChange('tags', e.target.value)}
+          />
+        </div>
+
+        <div className="main-app__field">
+          <label className="main-app__label">Archive trips</label>
+          <Dropdown
+            options={[
+              { value: '', label: 'All trips' },
+              { value: 'archive_only', label: 'Archive trips only' },
+              { value: 'no_archive', label: 'No archive trips only' },
+            ]}
+            value={filters.archiveFilter ? [filters.archiveFilter] : []}
+            onChange={(selected) => {
+              const val = (selected[0] || undefined) as ArchiveFilter;
+              const newFilters = { ...filters, archiveFilter: val };
+              setFilters(newFilters);
+              onSearch(newFilters);
+            }}
+            placeholder="All trips"
           />
         </div>
 
