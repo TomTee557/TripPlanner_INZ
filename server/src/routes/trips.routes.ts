@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTrips, getTripById, createTrip, updateTrip, deleteTrip, transferOwner } from '../controllers/trips.controller';
+import { getTrips, getTripById, createTrip, updateTrip, deleteTrip, transferOwner, getBudgetSummary } from '../controllers/trips.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -41,6 +41,43 @@ router.use(authenticateToken);
  *         description: Internal server error
  */
 router.get('/', getTrips);
+
+/**
+ * @swagger
+ * /api/trips/budget-summary:
+ *   get:
+ *     tags:
+ *       - Trips
+ *     summary: Get budget summary
+ *     description: >
+ *       Returns all trips the authenticated user owns or participates in (ACCEPTED),
+ *       each enriched with the expenses visible to that user (public + own private).
+ *       Designed for the Budget Overview feature — one request instead of N individual
+ *       expense fetches. Budget is returned as the raw string stored in the DB
+ *       (e.g. `€2500.00`, `$1200.00`); parse with a regex to extract the numeric value.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Budget summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/BudgetTripSummary'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/budget-summary', getBudgetSummary);
 
 /**
  * @swagger

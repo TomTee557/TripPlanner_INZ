@@ -24,6 +24,8 @@ const options: swaggerJsdoc.Options = {
           '- Group trip messages (TripComment) — chat-style comments with notifications',
           '- Per-item privacy on expenses, packing items, and todos in group trips',
           '- Travel documents management with expiry tracking (6-month warning for passports/visas, 30-day for others)',
+          '- Budget Overview: single-request `GET /api/trips/budget-summary` returns all trips with expenses for pie chart + progress bars',
+          '- Multi-currency budget: budget stored as symbol+amount string (e.g. `€600.00`, `$1200.00`); live conversion via NBP API',
           '- JWT token expiry 15 min with refresh endpoint',
         ].join('\n'),
       contact: {
@@ -134,8 +136,10 @@ const options: swaggerJsdoc.Options = {
               example: 'leisure',
             },
             budget: {
-              type: 'number',
-              example: 2500,
+              type: 'string',
+              nullable: true,
+              description: 'Budget stored as currency symbol + amount string (e.g. `€600.00`, `$1200.00`, `zł800.00`). Parse with regex to extract the numeric value.',
+              example: '€2500.00',
             },
             picture: {
               type: 'string',
@@ -434,6 +438,34 @@ const options: swaggerJsdoc.Options = {
               description:
                 'True if any document expires within 6 months (Passport/ID/Visa/Insurance/Vaccination/Driving License) or within 30 days (Other)',
               example: true,
+            },
+          },
+        },
+        BudgetTripSummary: {
+          type: 'object',
+          description: 'A single trip entry in the budget summary response — contains the trip details and its relevant expenses',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            title: { type: 'string', example: 'Summer in Greece' },
+            budget: {
+              type: 'string',
+              nullable: true,
+              description: 'Raw budget string as stored in DB, e.g. `€2500.00`, `$1200.00`. Null when no budget was set.',
+              example: '€2500.00',
+            },
+            dateFrom: { type: 'string', format: 'date', example: '2026-07-01' },
+            dateTo:   { type: 'string', format: 'date', example: '2026-07-15' },
+            expenses: {
+              type: 'array',
+              description: 'Expenses visible to the requesting user (public + own private expenses)',
+              items: {
+                type: 'object',
+                properties: {
+                  id:       { type: 'string', format: 'uuid' },
+                  amount:   { type: 'number', format: 'float', example: 45.50 },
+                  currency: { type: 'string', example: 'EUR' },
+                },
+              },
             },
           },
         },

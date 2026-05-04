@@ -13,6 +13,35 @@ import type { PictureKey } from '@utils/constants';
 import { getComments, addComment, deleteComment } from '@services/comments.service';
 import './TripForm.scss';
 
+const BUDGET_CURRENCIES = [
+  { code: 'PLN', name: 'Polish Zloty',      flag: '🇵🇱', symbol: 'zł' },
+  { code: 'USD', name: 'US Dollar',         flag: '🇺🇸', symbol: '$'  },
+  { code: 'EUR', name: 'Euro',              flag: '🇪🇺', symbol: '€'  },
+  { code: 'GBP', name: 'British Pound',     flag: '🇬🇧', symbol: '£'  },
+  { code: 'CHF', name: 'Swiss Franc',       flag: '🇨🇭', symbol: 'CHF'},
+  { code: 'JPY', name: 'Japanese Yen',      flag: '🇯🇵', symbol: '¥'  },
+  { code: 'CAD', name: 'Canadian Dollar',   flag: '🇨🇦', symbol: 'C$' },
+  { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺', symbol: 'A$' },
+  { code: 'SEK', name: 'Swedish Krona',     flag: '🇸🇪', symbol: 'kr' },
+  { code: 'NOK', name: 'Norwegian Krone',   flag: '🇳🇴', symbol: 'kr' },
+  { code: 'DKK', name: 'Danish Krone',      flag: '🇩🇰', symbol: 'kr' },
+  { code: 'CZK', name: 'Czech Koruna',      flag: '🇨🇿', symbol: 'Kč' },
+  { code: 'HUF', name: 'Hungarian Forint',  flag: '🇭🇺', symbol: 'Ft' },
+];
+
+const CURRENCY_CODES = BUDGET_CURRENCIES.map(c => c.code);
+
+function detectBudgetCurrency(raw: string): string {
+  const upper = raw.toUpperCase();
+  for (const code of CURRENCY_CODES) {
+    if (upper.includes(code)) return code;
+  }
+  if (upper.includes('$')) return 'USD';
+  if (upper.includes('€')) return 'EUR';
+  if (upper.includes('£')) return 'GBP';
+  return 'EUR';
+}
+
 interface ParticipantUser {
   id: number;
   email: string;
@@ -39,6 +68,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
     dateFrom: '',
     dateTo: '',
     price: '',
+    budgetCurrency: 'EUR',
     tripType: '',
     picture: '',
     description: '',
@@ -133,6 +163,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         dateFrom: formatDateToInput(trip.dateFrom),
         dateTo: formatDateToInput(trip.dateTo),
         price: priceValue,
+        budgetCurrency: trip.budget ? detectBudgetCurrency(trip.budget) : 'EUR',
         tripType: tripTypeValue,
         picture: pictureValue,
         description: trip.description || '',
@@ -180,7 +211,8 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
       country: formData.country.trim(),
       dateFrom: formData.dateFrom,
       dateTo: formData.dateTo,
-      budget: `€${parseFloat(formData.price).toFixed(2)}`,
+      budget: `${BUDGET_CURRENCIES.find(c => c.code === formData.budgetCurrency)?.symbol ?? formData.budgetCurrency}${parseFloat(formData.price).toFixed(2)}`,
+
       tripType: formData.tripType,
       image: formData.picture,
       description: formData.description.trim() || undefined,
@@ -257,16 +289,45 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
         />
       </div>
 
-      <Input
-        label="Price (EUR) *"
-        type="number"
-        step="0.01"
-        value={formData.price}
-        onChange={(e) => handleInputChange('price', e.target.value)}
-        error={errors.price}
-        fullWidth
-        disabled={readOnly}
-      />
+      <div className="trip-form__budget-row">
+        <div className="trip-form__budget-input">
+          <Input
+            label="Budget *"
+            type="number"
+            step="0.01"
+            value={formData.price}
+            onChange={(e) => handleInputChange('price', e.target.value)}
+            error={errors.price}
+            fullWidth
+            disabled={readOnly}
+          />
+        </div>
+        <div className="trip-form__budget-currency">
+          <label>Currency</label>
+          <select
+            className="trip-form__budget-select"
+            value={formData.budgetCurrency}
+            onChange={(e) => handleInputChange('budgetCurrency', e.target.value)}
+            disabled={readOnly}
+          >
+            {BUDGET_CURRENCIES.map(c => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.code} — {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {!readOnly && (
+          <button
+            type="button"
+            className="trip-form__budget-converter-btn"
+            onClick={() => setShowCurrencyConverter(true)}
+            title="Open Currency Converter"
+          >
+            💵
+          </button>
+        )}
+      </div>
 
       <Dropdown
         label="Trip Type *"
@@ -359,15 +420,6 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
       />
 
       <div className="trip-form__actions">
-        {!readOnly && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setShowCurrencyConverter(true)}
-          >
-            Currency Converter
-          </Button>
-        )}
         <div className="trip-form__actions-right">
           <Button type="button" variant="secondary" onClick={onCancel}>
             {readOnly ? 'Close' : 'Cancel'}

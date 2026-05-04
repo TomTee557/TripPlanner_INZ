@@ -17,6 +17,7 @@ import { PackingList } from '@components/trips/PackingList/PackingList';
 import { TodoList } from '@components/trips/TodoList/TodoList';
 import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
 import { TransferOwnerDialog } from '@components/trips/TransferOwnerDialog/TransferOwnerDialog';
+import { BudgetOverview } from '@components/trips/BudgetOverview/BudgetOverview';
 import { getNotificationCount, getExpiringSoon } from '@services/account.service';
 import api from '@services/api';
 import '@styles/mainApp.scss';
@@ -28,6 +29,7 @@ const MainAppPage = () => {
   const { trips, loading } = useSelector((state: RootState) => state.trips);
 
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
+  const [showBudget, setShowBudget] = useState(false);
   const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
@@ -325,7 +327,9 @@ const MainAppPage = () => {
         {/* Trips Section */}
         <div className="main-app__trips">
           <div className="main-app__trips-header">
-            <h2 className="main-app__trips-title">All trips:</h2>
+            <h2 className="main-app__trips-title">
+              {showBudget ? 'My Budget' : 'All trips:'}
+            </h2>
             <div className="main-app__trips-actions">
               {isAdmin && (
                 <button 
@@ -335,6 +339,13 @@ const MainAppPage = () => {
                   Manage users
                 </button>
               )}
+              <button
+                className="main-app__budget-btn"
+                onClick={() => setShowBudget((v) => !v)}
+                title={showBudget ? 'Open trips panel' : 'Open my budget summary'}
+              >
+                <span>{showBudget ? 'My Trips' : 'My Budget'}</span>
+              </button>
               <button className="main-app__add-trip" onClick={() => setIsAddTripModalOpen(true)}>
                 <span>Add trip</span>
                 <span>+</span>
@@ -342,18 +353,22 @@ const MainAppPage = () => {
             </div>
           </div>
 
-          <TripList
-            trips={filteredTrips}
-            loading={loading}
-            onEdit={handleEditClick}
-            onDelete={handleDeleteTrip}
-            onViewExpenses={handleViewExpenses}
-            onViewPacking={handleViewPacking}
-            onViewTodos={handleViewTodos}
-            onViewParticipants={handleViewParticipants}
-            onViewDetails={handleViewDetails}
-            canEdit={true}
-          />
+          {showBudget ? (
+            <BudgetOverview trips={filteredTrips} />
+          ) : (
+            <TripList
+              trips={filteredTrips}
+              loading={loading}
+              onEdit={handleEditClick}
+              onDelete={handleDeleteTrip}
+              onViewExpenses={handleViewExpenses}
+              onViewPacking={handleViewPacking}
+              onViewTodos={handleViewTodos}
+              onViewParticipants={handleViewParticipants}
+              onViewDetails={handleViewDetails}
+              canEdit={true}
+            />
+          )}
         </div>
       </div>
 

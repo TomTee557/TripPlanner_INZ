@@ -508,3 +508,69 @@ export const transferOwner = async (
     res.status(500).json({ error: 'Database error', message: 'Unable to transfer ownership' });
   }
 };
+
+/**
+ * GET /api/trips/budget-summary
+ * Get all trips with their expenses for budget overview (single request)
+ */
+export const getBudgetSummary = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'Not authenticated',
+        message: 'Authentication required'
+      });
+      return;
+    }
+
+    const trips = await prisma.trip.findMany({
+      where: {
+        OR: [
+          { userId: req.user.id },
+          {
+            participants: {
+              some: { userId: req.user.id, status: 'ACCEPTED' }
+            }
+          }
+        ]
+      },
+      include: {
+        expenses: {
+          where: {
+            OR: [{ isPrivate: false }, { userId: req.user.id }]
+          },
+          select: {
+            id: true,
+            amount: true,
+            currency: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const result = trips.map((trip: any) => ({
+      id: trip.id,
+      title: trip.title,
+      budget: trip.budget,
+      dateFrom: trip.dateFrom.toISOString().split('T')[0],
+      dateTo: trip.dateTo.toISOString().split('T')[0],
+      expenses: trip.expenses.map((e: any) => ({
+        id: e.id,
+        amount: e.amount.toNumber(),
+        currency: e.currency
+      }))
+    }));
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error fetching budget summary:', error);
+    res.status(500).json({
+      error: 'Database error',
+      message: 'Unable to fetch budget summary. Please try again later.'
+    });
+  }
+};

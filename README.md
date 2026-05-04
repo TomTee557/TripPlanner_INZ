@@ -27,6 +27,7 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - Real-time expense tracking with multi-currency support
 - Interactive packing list with progress tracking
 - Task management with priority levels and due dates
+- Visual **Budget Overview** — pie chart of expenses per trip, per-trip budget vs. spent progress bars, live currency conversion via the NBP API
 - Responsive design for desktop and mobile devices
 
 ---
@@ -43,7 +44,9 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Create Multiple Trips** - Organize different trips with custom names, descriptions, and dates
 - **Trip Types** - Categorize trips (Business, Leisure, Adventure, Beach, Mountain, City, Cultural, Safari, Cruise, Road Trip, Family, Backpacking, Luxury, Budget)
 - **Trip Filtering** - Search and filter trips by type, date range, or destination
+- **Archive Filter** - Filter trips to show All / Archive only (past trips) / No archive (future trips) via a dedicated dropdown in the search panel
 - **Trip Images** - Visual representation with predefined trip images
+- **Multi-Currency Budget** - Budget is set per trip with a currency selector (13 currencies supported: PLN, USD, EUR, GBP, CHF, JPY, CAD, AUD, SEK, NOK, DKK, CZK, HUF). Stored as symbol + amount string (e.g. `€2500.00`, `$1200.00`). The inline 💱 button in the form opens the Currency Converter for reference.
 - **Update & Delete** - Full CRUD operations on trips; edit button restricted to owners only
 
 ### 👥 Group Trips & Invitations
@@ -104,6 +107,14 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Badge on Settings** - Orange `!` badge appears on the ⚙ Settings button in the navbar whenever at least one document is within its warning window
 - **Badge on Documents Tab** - The Documents tab inside Account Settings shows the same orange `!` badge so the user knows where to look
 - **Full CRUD** - Add, edit (inline form per row), and delete documents; all operations refresh the expiry badge immediately
+
+### 📊 Budget Overview
+- **Single-Request Summary** - `GET /api/trips/budget-summary` fetches all trips and their visible expenses in one round-trip, avoiding N individual expense requests
+- **Pie Chart** - SVG pie chart showing the share of total spending per trip with a colour-coded legend
+- **Budget vs Expenses Progress Bars** - Per-trip horizontal bar (blue = within budget, red = over budget) showing spent / budget ratio; ⚠️ icon and "Over by" label when exceeded
+- **Live Currency Conversion** - Dropdown with 13 currencies; amounts are converted in real time using the [NBP exchange rate API](https://api.nbp.pl); fallback warning shown if the API is unreachable
+- **Smart Budget Parsing** - Budget strings like `€3,800`, `$1,200.50`, `2500 PLN`, `zł600.00` are parsed with a tolerant regex that handles thousands separators (`,` or `.`), currency symbols, and currency codes
+- **Toggle Button** - "My Budget" / "My Trips" button (always solid blue) in the header switches between the trips list and the budget view; tooltips guide the user
 
 ### 🎨 User Experience
 - **Custom Notifications** - Non-intrusive error notifications with auto-close (5 seconds)
@@ -570,6 +581,31 @@ Authorization: Bearer <token>
 
 All trip endpoints require authentication (JWT token in Authorization header).
 
+#### **GET** `/api/trips/budget-summary`
+Get all trips (owned + accepted participant) with their expenses, optimised for the Budget Overview. Returns a single response instead of N individual expense fetches.
+
+> ⚠️ This route is registered **before** `GET /api/trips/:id` in the router so the literal path `budget-summary` is not matched as `:id`.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "title": "Summer in Greece",
+      "budget": "€2500.00",
+      "dateFrom": "2026-07-01",
+      "dateTo": "2026-07-15",
+      "expenses": [
+        { "id": "uuid", "amount": 45.50, "currency": "EUR" },
+        { "id": "uuid", "amount": 120.00, "currency": "USD" }
+      ]
+    }
+  ]
+}
+```
+
 #### **GET** `/api/trips`
 Get all trips for authenticated user.
 
@@ -584,6 +620,8 @@ Update existing trip.
 
 #### **DELETE** `/api/trips/:id`
 Delete trip (owner) or leave trip (participant). When the owner deletes a trip that has accepted participants the frontend shows the `TransferOwnerDialog` first.
+
+**Budget format note:** the `budget` field is stored and returned as a currency-symbol + amount string, e.g. `€2500.00`, `$1200.00`, `zł800.00`. Use `budget.replace(/[^\d.]/g, '')` on the frontend to extract the numeric value.
 
 #### **PUT** `/api/trips/:id/transfer-owner`
 Transfer trip ownership to an accepted participant. Atomically updates the owner field, removes the new owner's participant record, and removes any stale participant record of the old owner. Only the current owner can call this endpoint.

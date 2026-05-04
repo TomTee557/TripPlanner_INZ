@@ -282,6 +282,26 @@
   background: #1565c0;
 }
 
+.main-app__budget-btn {
+  background: #2979ff;
+  color: #fff;
+  border: 2px solid #2979ff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: #1565c0;
+    border-color: #1565c0;
+  }
+}
+
 
 .main-app__trips-list {
   display: flex;

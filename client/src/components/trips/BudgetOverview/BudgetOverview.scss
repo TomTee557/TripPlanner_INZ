@@ -1,0 +1,210 @@
+.budget-overview {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+
+  &__loading,
+  &__empty,
+  &__no-expenses {
+    text-align: center;
+    color: #666;
+    font-size: 1rem;
+    padding: 3rem 0;
+  }
+
+  // ── Currency controls ──────────────────────────────────────────────────────
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__currency-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+    white-space: nowrap;
+  }
+
+  &__currency-select {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+
+    &:focus {
+      border-color: #2979ff;
+      box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.15);
+    }
+  }
+
+  &__rates-error {
+    font-size: 0.8rem;
+    color: #e65100;
+  }
+
+  // ── Pie + Legend ──────────────────────────────────────────
+  &__chart-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__pie {
+    width: 220px;
+    height: 220px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.12));
+  }
+
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #333;
+  }
+
+  &__legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__legend-title {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  &__legend-amount {
+    font-weight: 600;
+    color: #222;
+    white-space: nowrap;
+  }
+
+  &__legend-pct {
+    color: #888;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  // ── Trip list ─────────────────────────────────────────────
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__list-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem;
+  }
+
+  &__row {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__row-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__row-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #222;
+    flex: 1;
+  }
+
+  &__warn {
+    font-size: 1.1rem;
+    cursor: default;
+  }
+
+  &__row-amounts {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  &__spent {
+    color: #333;
+
+    &--over {
+      color: #c62828;
+      font-weight: 600;
+    }
+  }
+
+  &__budget {
+    color: #555;
+
+    &--none {
+      color: #aaa;
+      font-style: italic;
+    }
+  }
+
+  &__bar-wrap {
+    background: #e0e0e0;
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+  }
+
+  &__bar {
+    height: 100%;
+    border-radius: 999px;
+    background: #2979ff;
+    transition: width 0.4s ease;
+
+    &--over {
+      background: #c62828;
+    }
+  }
+
+  &__over-label {
+    font-size: 0.8rem;
+    color: #c62828;
+    font-weight: 600;
+    margin: 0;
+  }
+}
