@@ -104,6 +104,8 @@ function convert(amount: number, from: string, to: string, ratesMap: Map<string,
 }
 
 // SVG pie chart — returns path data for each slice
+// Zero-value slices are returned with d='' and pct=0 so they are skipped in rendering.
+// A single full-circle slice (100%) is handled via a special SVG circle fallback.
 function buildPieSlices(values: number[]): { d: string; pct: number }[] {
   const total = values.reduce((s, v) => s + v, 0);
   if (total === 0) return values.map(() => ({ d: '', pct: 0 }));
@@ -111,14 +113,17 @@ function buildPieSlices(values: number[]): { d: string; pct: number }[] {
   const CX = 100, CY = 100, R = 90;
   let angle = -Math.PI / 2;
   return values.map((v) => {
+    if (v === 0) return { d: '', pct: 0 };
     const pct = v / total;
     const sweep = pct * 2 * Math.PI;
+    // Nearly-full circle: nudge end point slightly so the arc is valid
+    const effectiveSweep = sweep >= 2 * Math.PI ? 2 * Math.PI - 0.0001 : sweep;
     const x1 = CX + R * Math.cos(angle);
     const y1 = CY + R * Math.sin(angle);
-    angle += sweep;
+    angle += effectiveSweep;
     const x2 = CX + R * Math.cos(angle);
     const y2 = CY + R * Math.sin(angle);
-    const large = sweep > Math.PI ? 1 : 0;
+    const large = effectiveSweep > Math.PI ? 1 : 0;
     const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} Z`;
     return { d, pct };
   });
@@ -127,21 +132,26 @@ function buildPieSlices(values: number[]): { d: string; pct: number }[] {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
-  const [summaries, setSummaries] = useState<BudgetTripSummary[]>([]);
+  const [allSummaries, setAllSummaries] = useState<BudgetTripSummary[]>([]);
   const [ratesMap, setRatesMap] = useState<Map<string, number>>(new Map([['PLN', 1]]));
   const [targetCurrency, setTargetCurrency] = useState('PLN');
+  const [pieMode, setPieMode] = useState<'expenses' | 'budget'>('expenses');
   const [loading, setLoading] = useState(true);
   const [ratesError, setRatesError] = useState(false);
 
-  // Fetch budget summary from backend (single request)
+  // Fetch all budget summaries once on mount
   useEffect(() => {
     setLoading(true);
     api
       .get<ApiSuccessResponse<BudgetTripSummary[]>>('/trips/budget-summary')
-      .then((res) => setSummaries(res.data ?? []))
-      .catch(() => setSummaries([]))
+      .then((res) => setAllSummaries(res.data ?? []))
+      .catch(() => setAllSummaries([]))
       .finally(() => setLoading(false));
-  }, [trips]);
+  }, []);
+
+  // Apply the same filter as the trips panel: only show trips present in the `trips` prop
+  const allowedIds = new Set(trips.map((t) => t.id));
+  const summaries = allSummaries.filter((s) => allowedIds.has(s.id));
 
   // Fetch live NBP exchange rates once on mount
   useEffect(() => {
@@ -166,15 +176,23 @@ export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
     return <div className="budget-overview__empty">No trips to display.</div>;
   }
 
-  // Per-trip total in targetCurrency
-  const totals = summaries.map((s) =>
+  // Per-trip totals in targetCurrency
+  const spentTotals = summaries.map((s) =>
     s.expenses.reduce(
       (sum, e) => sum + convert(e.amount, e.currency, targetCurrency, ratesMap),
       0
     )
   );
-  const grandTotal = totals.reduce((s, v) => s + v, 0);
-  const slices = buildPieSlices(totals);
+
+  const budgetTotals = summaries.map((s) => {
+    const raw = parseBudgetAmount(s.budget);
+    const cur = parseBudgetCurrency(s.budget);
+    return raw !== null ? convert(raw, cur, targetCurrency, ratesMap) : 0;
+  });
+
+  const pieValues = pieMode === 'expenses' ? spentTotals : budgetTotals;
+  const grandTotal = pieValues.reduce((s, v) => s + v, 0);
+  const slices = buildPieSlices(pieValues);
 
   return (
     <div className="budget-overview">
@@ -200,6 +218,18 @@ export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
             ⚠ Live rates unavailable, using approximate values
           </span>
         )}
+        <label className="budget-overview__currency-label" htmlFor="budget-pie-mode">
+          Pie chart shows:
+        </label>
+        <select
+          id="budget-pie-mode"
+          className="budget-overview__currency-select"
+          value={pieMode}
+          onChange={(e) => setPieMode(e.target.value as 'expenses' | 'budget')}
+        >
+          <option value="expenses">Expenses (spent)</option>
+          <option value="budget">Budget (planned)</option>
+        </select>
       </div>
 
       {/* Pie chart + legend */}
@@ -209,7 +239,7 @@ export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
             <svg
               className="budget-overview__pie"
               viewBox="0 0 200 200"
-              aria-label="Expenses by trip"
+              aria-label={pieMode === 'expenses' ? 'Expenses by trip' : 'Budget by trip'}
             >
               {slices.map((slice, i) =>
                 slice.d ? (
@@ -233,7 +263,7 @@ export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
                   />
                   <span className="budget-overview__legend-title">{s.title}</span>
                   <span className="budget-overview__legend-amount">
-                    {totals[i].toFixed(2)} {targetCurrency}
+                    {pieValues[i].toFixed(2)} {targetCurrency}
                   </span>
                   <span className="budget-overview__legend-pct">
                     ({(slices[i].pct * 100).toFixed(1)}%)
@@ -243,7 +273,11 @@ export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
             </ul>
           </>
         ) : (
-          <p className="budget-overview__no-expenses">No expenses recorded for selected trips.</p>
+          <p className="budget-overview__no-expenses">
+            {pieMode === 'expenses'
+              ? 'No expenses recorded for selected trips.'
+              : 'No budget set for selected trips.'}
+          </p>
         )}
       </div>
 
@@ -251,13 +285,8 @@ export const BudgetOverview = ({ trips }: BudgetOverviewProps) => {
       <div className="budget-overview__list">
         <h3 className="budget-overview__list-title">Budget vs Expenses</h3>
         {summaries.map((s, i) => {
-          const spent = totals[i];
-          const rawBudgetAmount = parseBudgetAmount(s.budget);
-          const budgetCurrency = parseBudgetCurrency(s.budget);
-          const budget =
-            rawBudgetAmount !== null
-              ? convert(rawBudgetAmount, budgetCurrency, targetCurrency, ratesMap)
-              : null;
+          const spent = spentTotals[i];
+          const budget = budgetTotals[i] > 0 ? budgetTotals[i] : null;
           const over = budget !== null && spent > budget;
           const pct = budget && budget > 0
             ? Math.min((spent / budget) * 100, 100)

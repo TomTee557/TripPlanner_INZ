@@ -110,7 +110,7 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 
 ### 📊 Budget Overview
 - **Single-Request Summary** - `GET /api/trips/budget-summary` fetches all trips and their visible expenses in one round-trip, avoiding N individual expense requests
-- **Pie Chart** - SVG pie chart showing the share of total spending per trip with a colour-coded legend
+- **Pie Chart** - SVG pie chart showing the share of total spending per trip with a colour-coded legend. Two modes selectable via a dropdown: **Expenses (spent)** — visualises how much has actually been spent per trip; **Budget (planned)** — visualises the planned budget allocation per trip. Zero-value slices are skipped so the chart always renders correctly
 - **Budget vs Expenses Progress Bars** - Per-trip horizontal bar (blue = within budget, red = over budget) showing spent / budget ratio; ⚠️ icon and "Over by" label when exceeded
 - **Live Currency Conversion** - Dropdown with 13 currencies; amounts are converted in real time using the [NBP exchange rate API](https://api.nbp.pl); fallback warning shown if the API is unreachable
 - **Smart Budget Parsing** - Budget strings like `€3,800`, `$1,200.50`, `2500 PLN`, `zł600.00` are parsed with a tolerant regex that handles thousands separators (`,` or `.`), currency symbols, and currency codes
