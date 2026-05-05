@@ -209,9 +209,44 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
 };
 
 /**
- * POST /api/auth/logout
- * Logout user (for JWT this is mainly client-side, server just confirms)
+ * DELETE /api/auth/account
+ * Delete the authenticated user's own account.
+ * Blocked when the user still owns group trips with accepted participants.
  */
+export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    if (!user?.id) {
+      res.status(401).json({ error: 'Not authenticated', message: 'Authentication required' });
+      return;
+    }
+
+    // Check for group trips (owned trips that have at least one ACCEPTED participant)
+    const ownedGroupTrips = await prisma.trip.findMany({
+      where: {
+        userId: user.id,
+        participants: { some: { status: 'ACCEPTED' } }
+      },
+      select: { id: true, title: true }
+    });
+
+    if (ownedGroupTrips.length > 0) {
+      res.status(409).json({
+        error: 'Cannot delete account',
+        message: `You cannot delete your account while you are the owner of group trip(s): ${ownedGroupTrips.map((t: any) => `"${t.title}"`).join(', ')}. Please transfer ownership or delete those trips first.`
+      });
+      return;
+    }
+
+    // Delete the user — Prisma cascades will remove their solo trips, expenses, documents, etc.
+    await prisma.user.delete({ where: { id: user.id } });
+
+    res.status(200).json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Database error', message: 'Unable to delete account. Please try again later.' });
+  }
+};
 export const logout = async (_req: Request, res: Response): Promise<void> => {
   // For stateless JWT, logout is handled client-side by removing token
   // This endpoint exists for consistency and future token blacklisting if needed

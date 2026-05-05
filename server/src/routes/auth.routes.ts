@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, register, logout, refresh } from '../controllers/auth.controller';
+import { login, register, logout, refresh, deleteAccount } from '../controllers/auth.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -197,5 +197,50 @@ router.post('/refresh', authenticateToken, refresh);
  *         description: Internal server error
  */
 router.post('/logout', logout);
+
+/**
+ * @swagger
+ * /api/auth/account:
+ *   delete:
+ *     tags:
+ *       - Authentication
+ *     summary: Delete own account (self-service)
+ *     description: |
+ *       Permanently deletes the currently authenticated user's own account.
+ *       Blocked with HTTP 409 if the user is the owner of any group trip that has at
+ *       least one ACCEPTED participant — those trips must be transferred or deleted first.
+ *       On success, Prisma CASCADE removes all owned solo trips, expenses/comments/packing
+ *       items in other trips, participant records, documents, and notifications.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Not authenticated
+ *       409:
+ *         description: Cannot delete — user owns group trips with accepted participants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ */
+router.delete('/account', authenticateToken, deleteAccount);
 
 export default router;

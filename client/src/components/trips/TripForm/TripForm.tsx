@@ -324,7 +324,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
             onClick={() => setShowCurrencyConverter(true)}
             title="Open Currency Converter"
           >
-            💵
+            🔁
           </button>
         )}
       </div>

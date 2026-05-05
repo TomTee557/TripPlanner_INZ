@@ -39,6 +39,8 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **JWT Token Management** - Stateless authentication with 15-minute token expiration
 - **Automatic Session Refresh** - Smart session timer with 30-second warning before expiration
 - **Protected Routes** - Frontend and backend route protection with automatic redirect to login
+- **Self-Service Account Deletion** - Users can delete their own account from the Settings tab (Danger Zone section). Blocked with a clear error message if the user owns any group trips with accepted participants. On success all owned solo trips, expenses/comments in other trips, participant records, documents, and notifications are removed via Prisma CASCADE.
+- **Admin-Forced Account Deletion** - Admin panel can delete any user; the system automatically transfers ownership of group trips (earliest accepted participant becomes the new owner and is removed from participants list) before the account is removed
 
 ### 🗺️ Trip Management
 - **Create Multiple Trips** - Organize different trips with custom names, descriptions, and dates
@@ -58,7 +60,8 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Transfer Ownership** - Before deleting a group trip the owner is offered a choice: transfer ownership to one of the accepted participants (the new owner takes over, the old owner leaves the trip) or delete the trip for everyone; a dedicated dialog with a participant dropdown makes the flow explicit
 - **Private Items** - Expenses, packing items, and todos can be marked as private (visible only to their author in group trips)
 - **Participant Panel** - Dedicated panel showing all current participants with their status
-- **Group Badge** - Visual indicator on trip cards when other accepted participants are present
+- **Group Badge** - Visual indicator on trip cards distinguishing role: `"Group trip — owner"` badge for the trip creator, `"Group trip"` badge for participants
+- **Group Filter Dropdown** - Search panel dropdown replaces the old checkbox: filter by *All trips* / *Group trips only* / *Group trips I own* / *Solo trips only*
 
 ### 🔔 Notifications & Messaging
 - **Notification Badge** - Live counter in the UI header showing total pending actions (`⚙ Settings` button)
@@ -577,6 +580,29 @@ Authorization: Bearer <token>
 }
 ```
 
+#### **DELETE** `/api/auth/account`
+Permanently delete the currently authenticated user's own account (self-service).
+
+Blocked with **409 Conflict** when the user is the owner of any group trip that has at least one `ACCEPTED` participant — those trips must be transferred or deleted first. On success Prisma CASCADE removes all owned solo trips, the user's expenses/comments in other trips, participant records, documents, and notifications.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Success response `200`:**
+```json
+{ "success": true, "message": "Account deleted successfully" }
+```
+
+**Blocked response `409`:**
+```json
+{
+  "error": "Cannot delete account",
+  "message": "You cannot delete your account while you are the owner of group trip(s): \"Summer in Greece\". Please transfer ownership or delete those trips first."
+}
+```
+
 ### Trips Endpoints
 
 All trip endpoints require authentication (JWT token in Authorization header).
@@ -878,6 +904,37 @@ Delete a document. Only the document owner can call this.
 ```json
 { "success": true, "message": "Document deleted successfully" }
 ```
+
+### Admin Endpoints
+
+All admin endpoints require authentication **and** `role === 'ADMIN'`.
+
+#### **GET** `/api/admin/users`
+Returns a list of all registered users.
+
+#### **PUT** `/api/admin/users/:id/role`
+Change a user's role (`USER` / `ADMIN`).
+
+#### **PUT** `/api/admin/users/:id/password`
+Force-reset a user's password.
+
+#### **DELETE** `/api/admin/users/:id`
+Permanently delete a user account with automatic ownership transfer.
+
+Before deleting, the system finds all group trips owned by that user which have at least one `ACCEPTED` participant. For each such trip the **earliest accepted participant** becomes the new owner (their `TripParticipant` record is removed since they are now the owner). Solo trips and group trips without accepted participants are removed via Prisma CASCADE together with the user record.
+
+**Path parameter:** `id` — integer user ID
+
+**Constraints:**
+- Admin cannot delete their own account via this endpoint (use the self-service route or a different admin account)
+- If the deleted user was a participant (not owner) in other trips, their `TripParticipant`, `Expense`, and `TripComment` records in those trips are removed by CASCADE
+
+**Response `200`:**
+```json
+{ "success": true, "message": "User deleted successfully" }
+```
+
+**Error responses:** `400` (invalid ID or self-delete attempt), `401`, `403` (not admin), `404` (user not found), `500`.
 
 ---
 

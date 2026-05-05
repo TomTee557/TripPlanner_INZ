@@ -90,6 +90,8 @@ export interface UpdateTripData {
 
 export type ArchiveFilter = 'archive_only' | 'no_archive' | undefined;
 
+export type GroupFilter = 'group_only' | 'owner_only' | 'solo_only' | undefined;
+
 export interface TripFilters {
   title?: string;
   country?: string;
@@ -97,7 +99,7 @@ export interface TripFilters {
   tags?: string;
   dateFrom?: string;
   dateTo?: string;
-  groupOnly?: boolean;
+  groupFilter?: GroupFilter;
   archiveFilter?: ArchiveFilter;
 }
 

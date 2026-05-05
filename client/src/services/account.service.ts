@@ -57,3 +57,7 @@ export const clearReadInvitations = () =>
 
 export const getNotificationCount = () =>
   api.get<ApiSuccessResponse<NotificationCount>>('/invitations/notifications');
+
+// Account
+export const deleteAccount = () =>
+  api.delete<ApiSuccessResponse>('/auth/account');

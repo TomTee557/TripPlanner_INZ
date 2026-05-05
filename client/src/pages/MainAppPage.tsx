@@ -235,6 +235,7 @@ const MainAppPage = () => {
 
   // Filter trips based on search criteria
   const filteredTrips = trips.filter((trip: Trip) => {
+    if (!trip) return false;
     if (filters.title && trip.title && !trip.title.toLowerCase().includes(filters.title.toLowerCase())) {
       return false;
     }
@@ -259,8 +260,13 @@ const MainAppPage = () => {
     if (filters.dateTo && trip.dateTo && trip.dateTo > filters.dateTo) {
       return false;
     }
-    if (filters.groupOnly && !(trip.participants && trip.participants.length > 0)) {
-      return false;
+    if (filters.groupFilter) {
+      const hasParticipants = (trip.participants?.length ?? 0) > 0;
+      const isGroupTrip = hasParticipants || trip.isOwner === false;
+      const isGroupOwner = hasParticipants && trip.isOwner !== false;
+      if (filters.groupFilter === 'group_only' && !isGroupTrip) return false;
+      if (filters.groupFilter === 'owner_only' && !isGroupOwner) return false;
+      if (filters.groupFilter === 'solo_only' && isGroupTrip) return false;
     }
     const isArchival = trip.dateTo ? new Date(trip.dateTo) < new Date() : false;
     if (filters.archiveFilter === 'archive_only' && !isArchival) {
@@ -561,6 +567,7 @@ const MainAppPage = () => {
           onTripListChange={() => dispatch(fetchTripsRequest())}
           hasExpiringDocuments={hasExpiringDocuments}
           onExpiringDocumentsChange={setHasExpiringDocuments}
+          onAccountDeleted={handleLogout}
         />
       </Modal>
     </div>

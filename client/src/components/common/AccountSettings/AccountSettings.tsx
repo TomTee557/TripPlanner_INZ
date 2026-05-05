@@ -13,6 +13,7 @@ interface AccountSettingsProps {
   onTripListChange: () => void;
   hasExpiringDocuments?: boolean;
   onExpiringDocumentsChange?: (hasExpiring: boolean) => void;
+  onAccountDeleted: () => void;
 }
 
 const tabs: { key: TabKey; label: string }[] = [
@@ -22,7 +23,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: 'invitations', label: 'Invitations' },
 ];
 
-export const AccountSettings = ({ notificationCount, onNotificationChange, onTripListChange, hasExpiringDocuments = false, onExpiringDocumentsChange }: AccountSettingsProps) => {
+export const AccountSettings = ({ notificationCount, onNotificationChange, onTripListChange, hasExpiringDocuments = false, onExpiringDocumentsChange, onAccountDeleted }: AccountSettingsProps) => {
   const [activeTab, setActiveTab] = useState<TabKey>('documents');
 
   return (
@@ -48,7 +49,7 @@ export const AccountSettings = ({ notificationCount, onNotificationChange, onTri
       <div className="account-settings__content">
         {activeTab === 'documents' && <DocumentsTab onExpiringChange={onExpiringDocumentsChange} />}
         {activeTab === 'about' && <AboutMeTab />}
-        {activeTab === 'settings' && <SettingsTab />}
+        {activeTab === 'settings' && <SettingsTab onAccountDeleted={onAccountDeleted} />}
         {activeTab === 'invitations' && <InvitationsTab onNotificationChange={onNotificationChange} onTripListChange={onTripListChange} />}
       </div>
     </div>

@@ -29,6 +29,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
   imagePath = imagePath.replace('/public/assets/', '/').replace('/public/', '/');
 
   const isGroupTrip = trip.isOwner === false || ((trip.participants?.length ?? 0) > 0);
+  const isGroupOwner = isGroupTrip && trip.isOwner !== false;
   const isArchival = trip.dateTo ? new Date(trip.dateTo) < new Date() : false;
 
   return (
@@ -39,7 +40,9 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
       >
         <span className="trip-card__type">{tripTypeLabel}</span>
         {isGroupTrip && (
-          <span className="trip-card__group-badge">Group trip</span>
+          <span className="trip-card__group-badge">
+            {isGroupOwner ? 'Group trip — owner' : 'Group trip'}
+          </span>
         )}
         {isArchival && (
           <span className={`trip-card__archival-badge${isGroupTrip ? ' trip-card__archival-badge--below' : ''}`}>Archival</span>

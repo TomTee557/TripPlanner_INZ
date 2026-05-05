@@ -137,8 +137,14 @@ router.put('/users/:id/password', updateUserPassword);
  *   delete:
  *     tags:
  *       - Admin
- *     summary: Delete user
- *     description: Permanently delete a user account (admin only)
+ *     summary: Delete user (with ownership transfer)
+ *     description: |
+ *       Permanently delete a user account (admin only).
+ *       Before deleting, the system automatically transfers ownership of any group trips
+ *       that have at least one ACCEPTED participant: the earliest accepted participant
+ *       becomes the new owner and is removed from the participants list.
+ *       Solo trips and group trips with no accepted participants are removed via Prisma CASCADE.
+ *       The deleted user's expenses and comments in other users' trips are also removed by CASCADE.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -146,18 +152,30 @@ router.put('/users/:id/password', updateUserPassword);
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
  *         description: User ID
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: User deleted successfully (ownership transferred where applicable)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid ID or attempt to delete own account
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Admin access required
  *       404:
  *         description: User not found
+ *       500:
+ *         description: Internal server error
  */
 router.delete('/users/:id', deleteUser);
 

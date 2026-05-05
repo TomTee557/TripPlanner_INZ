@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Dropdown } from '@components/common/Dropdown';
 import { tripTypeLabels } from '@utils/constants';
-import type { TripFilters, ArchiveFilter } from '@types';
+import type { TripFilters, ArchiveFilter, GroupFilter } from '@types';
 import './SearchPanel.scss';
 
 interface SearchPanelProps {
@@ -31,15 +31,6 @@ export const SearchPanel = ({
     const newFilters = {
       ...filters,
       [field]: value
-    };
-    setFilters(newFilters);
-    onSearch(newFilters);
-  };
-
-  const handleCheckboxChange = (field: keyof TripFilters, checked: boolean) => {
-    const newFilters = {
-      ...filters,
-      [field]: checked || undefined
     };
     setFilters(newFilters);
     onSearch(newFilters);
@@ -147,16 +138,24 @@ export const SearchPanel = ({
           />
         </div>
 
-        <div className="main-app__field main-app__field--checkbox">
-          <label className="main-app__checkbox-label">
-            <input
-              type="checkbox"
-              className="main-app__checkbox"
-              checked={filters.groupOnly || false}
-              onChange={(e) => handleCheckboxChange('groupOnly', e.target.checked)}
-            />
-            Group trips only
-          </label>
+        <div className="main-app__field">
+          <label className="main-app__label">Group trips</label>
+          <Dropdown
+            options={[
+              { value: '', label: 'All trips' },
+              { value: 'group_only', label: 'Group trips only' },
+              { value: 'owner_only', label: 'Group trips I own' },
+              { value: 'solo_only', label: 'Solo trips only' },
+            ]}
+            value={filters.groupFilter ? [filters.groupFilter] : []}
+            onChange={(selected) => {
+              const val = (selected[0] || undefined) as GroupFilter;
+              const newFilters = { ...filters, groupFilter: val };
+              setFilters(newFilters);
+              onSearch(newFilters);
+            }}
+            placeholder="All trips"
+          />
         </div>
         
         <div className="main-app__button-group">

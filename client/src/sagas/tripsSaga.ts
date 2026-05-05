@@ -5,7 +5,6 @@ import {
   fetchTripsSuccess,
   fetchTripsFailure,
   createTripRequest,
-  createTripSuccess,
   createTripFailure,
   updateTripRequest,
   updateTripSuccess,
@@ -34,13 +33,12 @@ function* fetchTripsSaga() {
 // Create trip saga
 function* createTripSaga(action: PayloadAction<CreateTripData>) {
   try {
-    const response: { success: boolean; data: Trip } = yield call(
+    yield call(
       api.post.bind(api),
       '/trips',
       action.payload
     );
-    yield put(createTripSuccess(response.data));
-    // Re-fetch trips to get updated list
+    // Re-fetch trips to get the updated list from the server
     yield put(fetchTripsRequest());
   } catch (error: any) {
     const message = error.response?.data?.message || 'Failed to create trip';

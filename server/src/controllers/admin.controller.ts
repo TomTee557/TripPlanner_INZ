@@ -208,7 +208,38 @@ export const deleteUser = async (
       return;
     }
 
-    // Delete user (CASCADE will delete related trips automatically)
+    // Transfer ownership of group trips that have ACCEPTED participants
+    const ownedGroupTrips = await prisma.trip.findMany({
+      where: {
+        userId: userId,
+        participants: { some: { status: 'ACCEPTED' } }
+      },
+      include: {
+        participants: {
+          where: { status: 'ACCEPTED' },
+          orderBy: { createdAt: 'asc' },
+          take: 1
+        }
+      }
+    });
+
+    for (const trip of ownedGroupTrips) {
+      const newOwner = trip.participants[0];
+      if (newOwner) {
+        await prisma.$transaction([
+          prisma.trip.update({
+            where: { id: trip.id },
+            data: { userId: newOwner.userId }
+          }),
+          prisma.tripParticipant.delete({
+            where: { id: newOwner.id }
+          })
+        ]);
+      }
+    }
+
+    // Delete user (CASCADE will delete their owned trips without ACCEPTED participants,
+    // expenses/comments in other trips, participant records, documents, notifications)
     await prisma.user.delete({
       where: { id: userId }
     });
