@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { TripParticipant } from '@types';
 import './ParticipantsList.scss';
 
@@ -14,6 +15,7 @@ interface ParticipantsListProps {
   owner?: Owner | null;
   isOwner?: boolean;
   onRemoveParticipant?: (participantId: string) => void;
+  onTransferOwnership?: (userId: number) => Promise<void>;
 }
 
 const statusConfig: Record<string, { icon: string; label: string; className: string }> = {
@@ -22,9 +24,32 @@ const statusConfig: Record<string, { icon: string; label: string; className: str
   PENDING: { icon: '⏳', label: 'Pending', className: 'pending' },
 };
 
-export const ParticipantsList = ({ participants, tripTitle, owner, isOwner = false, onRemoveParticipant }: ParticipantsListProps) => {
+export const ParticipantsList = ({ participants, tripTitle, owner, isOwner = false, onRemoveParticipant, onTransferOwnership }: ParticipantsListProps) => {
+  const [transferConfirmId, setTransferConfirmId] = useState<number | null>(null);
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferError, setTransferError] = useState<string | null>(null);
+
   const visibleParticipants = participants.filter((p) => p.status !== 'REJECTED');
   const totalCount = (owner ? 1 : 0) + visibleParticipants.length;
+
+  const handleTransferClick = (userId: number) => {
+    setTransferError(null);
+    setTransferConfirmId(userId);
+  };
+
+  const handleTransferConfirm = async (userId: number) => {
+    if (!onTransferOwnership) return;
+    setTransferLoading(true);
+    setTransferError(null);
+    try {
+      await onTransferOwnership(userId);
+      setTransferConfirmId(null);
+    } catch (err: any) {
+      setTransferError(err?.response?.data?.message || 'Failed to transfer ownership.');
+    } finally {
+      setTransferLoading(false);
+    }
+  };
 
   if (totalCount === 0) {
     return (
@@ -63,6 +88,9 @@ export const ParticipantsList = ({ participants, tripTitle, owner, isOwner = fal
         {/* Invited participants (excluding rejected) */}
         {visibleParticipants.map((participant) => {
           const config = statusConfig[participant.status] || statusConfig.PENDING;
+          const isConfirming = transferConfirmId === participant.userId;
+          const canTransfer = isOwner && !!onTransferOwnership && participant.status === 'ACCEPTED';
+
           return (
             <div key={participant.id} className="participants-list__item">
               <div className="participants-list__item-avatar">
@@ -77,15 +105,51 @@ export const ParticipantsList = ({ participants, tripTitle, owner, isOwner = fal
                   {participant.email}
                 </span>
               </div>
-              <div className={`participants-list__item-status participants-list__item-status--${config.className}`}>
-                <span className="participants-list__item-status-icon">{config.icon}</span>
-                <span className="participants-list__item-status-label">{config.label}</span>
-              </div>
-              {isOwner && onRemoveParticipant && (
+
+              {isConfirming ? (
+                <div className="participants-list__transfer-confirm">
+                  <span className="participants-list__transfer-confirm-text">Make owner?</span>
+                  <button
+                    className="participants-list__transfer-confirm-btn participants-list__transfer-confirm-btn--yes"
+                    disabled={transferLoading}
+                    onClick={() => handleTransferConfirm(participant.userId)}
+                    title="Confirm transfer"
+                  >
+                    {transferLoading ? '…' : 'Yes'}
+                  </button>
+                  <button
+                    className="participants-list__transfer-confirm-btn participants-list__transfer-confirm-btn--no"
+                    disabled={transferLoading}
+                    onClick={() => { setTransferConfirmId(null); setTransferError(null); }}
+                    title="Cancel"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <div className={`participants-list__item-status participants-list__item-status--${config.className}`}>
+                  <span className="participants-list__item-status-icon">{config.icon}</span>
+                  <span className="participants-list__item-status-label">{config.label}</span>
+                </div>
+              )}
+
+              {canTransfer && !isConfirming && (
+                <button
+                  className="participants-list__transfer-btn"
+                  onClick={() => handleTransferClick(participant.userId)}
+                  title="Transfer ownership to this participant"
+                  disabled={transferLoading}
+                >
+                  Make Owner
+                </button>
+              )}
+
+              {isOwner && onRemoveParticipant && !isConfirming && (
                 <button
                   className="participants-list__remove-btn"
                   onClick={() => onRemoveParticipant(participant.id)}
                   title="Remove participant"
+                  disabled={transferLoading}
                 >
                   ✕
                 </button>
@@ -94,6 +158,9 @@ export const ParticipantsList = ({ participants, tripTitle, owner, isOwner = fal
           );
         })}
       </div>
+      {transferError && (
+        <p className="participants-list__transfer-error">{transferError}</p>
+      )}
     </div>
   );
 };

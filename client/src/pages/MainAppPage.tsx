@@ -233,6 +233,14 @@ const MainAppPage = () => {
     }
   };
 
+  const handleTransferOwnershipFromModal = async (newOwnerId: number) => {
+    if (!selectedTrip) return;
+    await api.put(`/trips/${selectedTrip.id}/transfer-owner`, { newOwnerId });
+    setIsParticipantsModalOpen(false);
+    setSelectedTrip(null);
+    dispatch(fetchTripsRequest());
+  };
+
   // Filter trips based on search criteria
   const filteredTrips = trips.filter((trip: Trip) => {
     if (!trip) return false;
@@ -549,6 +557,7 @@ const MainAppPage = () => {
             owner={selectedTrip.owner}
             isOwner={selectedTrip.isOwner}
             onRemoveParticipant={handleRemoveParticipant}
+            onTransferOwnership={selectedTrip.isOwner !== false ? handleTransferOwnershipFromModal : undefined}
           />
         )}
       </Modal>

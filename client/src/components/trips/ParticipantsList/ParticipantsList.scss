@@ -127,9 +127,94 @@
     transition: background 0.2s, color 0.2s;
     margin-left: 0.25rem;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: #fdecea;
       color: #c62828;
     }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__transfer-btn {
+    flex-shrink: 0;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid #c5b3e6;
+    border-radius: 1rem;
+    background: transparent;
+    color: #6a3fbd;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    margin-left: 0.25rem;
+
+    &:hover:not(:disabled) {
+      background: #ede7f6;
+      border-color: #7e57c2;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+
+  &__transfer-confirm {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  &__transfer-confirm-text {
+    font-size: 0.8rem;
+    color: #555;
+    white-space: nowrap;
+  }
+
+  &__transfer-confirm-btn {
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.4rem;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &--yes {
+      background: #4527a0;
+      color: #fff;
+
+      &:hover:not(:disabled) {
+        background: #311b92;
+      }
+    }
+
+    &--no {
+      background: #eee;
+      color: #444;
+
+      &:hover:not(:disabled) {
+        background: #ddd;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__transfer-error {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: #fff3f3;
+    color: #c62828;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
   }
 }
