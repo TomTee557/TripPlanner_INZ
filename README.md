@@ -12,6 +12,17 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - [Getting Started](#-getting-started)
 - [Project Structure](#-project-structure)
 - [API Documentation](#-api-documentation)
+  - [Authentication](#authentication-endpoints)
+  - [Trips](#trips-endpoints)
+  - [Expenses](#expenses-endpoints)
+  - [Packing List](#packing-list-endpoints)
+  - [Todos](#todo-endpoints)
+  - [Invitations & Notifications](#invitations--notifications-endpoints)
+  - [Comments (Group Messages)](#comments-group-messages-endpoints)
+  - [Documents](#documents-endpoints)
+  - [Admin](#admin-endpoints)
+  - [Profile](#profile-endpoints)
+  - [AI Smart Packing](#ai-endpoints)
 - [Environment Variables](#-environment-variables)
 - [Contributing](#-contributing)
 
@@ -126,6 +137,23 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **Responsive Design** - Mobile-first approach with SCSS styling
 - **Loading States** - Smooth loading indicators for async operations
 - **Error Handling** - Comprehensive error messages from backend API
+
+### 🤖 AI Smart Packing (feature-gated)
+- **Permission-Based Access** — Only users with the `SMART_PACKING` permission (granted by an admin) see the Smart Pack button on the trip form
+- **Contextual Questions Modal** — Before calling the AI, users answer a short set of optional questions across two steps: activities (chip selection + free-text "other" field), city / region (for precise climate inference), accommodation type, transport to destination (Plane, Train, Car, Bus, Boat, Motorbike), and transport around destination (Rental car, Public transport, Taxi, Bicycle, Walking, Motorbike, Boat)
+- **Practical AI Output** — Uses OpenAI `gpt-4o-mini` to generate four sections saved directly to the trip:
+  - **Packing list** (10–25 items with category, quantity, and priority) — climate-aware and activity-specific
+  - **Pre-trip todo list** (5–10 tasks) — includes visa check for the user's nationality, vaccination advice, and booking reminders
+  - **Estimated expenses** (4–10 entries) — realistic cost estimates including transport, accommodation, food, and activities
+  - **Trip note** — 3–5 sentences of practical advice: inferred weather, visa/entry requirements, dietary warnings, must-see attractions, and health recommendations
+- **Nationality-Aware** — User's nationality (stored in profile) is sent to the AI to personalise visa and passport validity advice
+- **Language Selection** — Response language follows the "Polish / English" selector in the modal
+- **Validation** — Smart Pack button is always visible; clicking validates that Title, Country, Dates, Budget, and Trip Type are filled before opening the modal; missing fields surface as a dark tooltip above the button
+- **Admin Management** — Admin panel lists and toggles `SMART_PACKING` per user via a checkbox UI
+
+### 👤 User Profile
+- **About Me Tab** — Users can set and update their **Birthday** (date picker) and **Nationality** (text field) from Account Settings → About Me; both fields are saved in a single request
+- **Nationality for AI** — Nationality is stored in the DB and passed to the AI Smart Packing prompt to generate nationality-specific visa and passport advice
 
 ---
 
@@ -299,6 +327,10 @@ JWT_EXPIRES_IN=15m
 
 # CORS
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
+
+# OpenAI (required for AI Smart Packing)
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 **Start the backend server:**
@@ -364,7 +396,10 @@ ZDPAI-Project/
 │   │   │   ├── todos.controller.ts
 │   │   │   ├── invitations.controller.ts
 │   │   │   ├── notifications.controller.ts
-│   │   │   └── comments.controller.ts  # Group trip messages
+│   │   │   ├── comments.controller.ts  # Group trip messages
+│   │   │   ├── admin.controller.ts  # Admin: users, roles, permissions
+│   │   │   ├── profile.controller.ts   # User profile (birthday, nationality)
+│   │   │   └── ai.controller.ts     # AI Smart Packing (OpenAI)
 │   │   │
 │   │   ├── routes/                  # API route definitions
 │   │   │   ├── auth.routes.ts       # /api/auth/*
@@ -375,11 +410,15 @@ ZDPAI-Project/
 │   │   │   ├── participants.routes.ts
 │   │   │   ├── invitations.routes.ts
 │   │   │   ├── notifications.routes.ts
-│   │   │   └── comments.routes.ts   # /api/trips/:tripId/comments/*
+│   │   │   ├── comments.routes.ts   # /api/trips/:tripId/comments/*
+│   │   │   ├── admin.routes.ts      # /api/admin/*
+│   │   │   ├── profile.routes.ts    # /api/profile/*
+│   │   │   └── ai.routes.ts         # /api/ai/*
 │   │   │
 │   │   ├── middleware/              # Express middleware
-│   │   │   ├── auth.middleware.ts   # JWT verification
-│   │   │   ├── error.middleware.ts  # Error handling
+│   │   │   ├── auth.middleware.ts       # JWT verification
+│   │   │   ├── authorization.middleware.ts  # requireAdmin, requireOwnerOrAdmin
+│   │   │   ├── error.middleware.ts      # Error handling
 │   │   │   └── validation.middleware.ts
 │   │   │
 │   │   ├── config/                  # Configuration files
@@ -436,7 +475,8 @@ ZDPAI-Project/
 │   │   │   ├── packing.service.ts
 │   │   │   ├── todos.service.ts
 │   │   │   ├── account.service.ts   # Profile, invitations, notifications
-│   │   │   └── comments.service.ts  # Group trip messages
+│   │   │   ├── comments.service.ts  # Group trip messages
+│   │   │   └── ai.service.ts        # AI Smart Packing
 │   │   │
 │   │   ├── hooks/                   # Custom React hooks
 │   │   │   └── useSessionTimer.ts   # Session management
@@ -509,27 +549,26 @@ Register a new user.
 ```json
 {
   "email": "user@example.com",
-  "username": "username",
+  "name": "John",
+  "surname": "Doe",
   "password": "password123",
-  "firstName": "John",
-  "lastName": "Doe"
+  "nationality": "Polish",
+  "birthday": "1995-06-15"
 }
 ```
 
-**Response:**
+> `nationality` and `birthday` are optional. New accounts start with **no permissions** — `SMART_PACKING` must be granted explicitly by an admin.
+
+**Response `201`:**
 ```json
 {
   "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "uuid",
-      "email": "user@example.com",
-      "username": "username",
-      "firstName": "John",
-      "lastName": "Doe"
-    }
+  "message": "Account created successfully",
+  "user": {
+    "id": 7,
+    "email": "user@example.com",
+    "name": "John",
+    "surname": "Doe"
   }
 }
 ```
@@ -545,21 +584,23 @@ Authenticate user and receive JWT token.
 }
 ```
 
-**Response:**
+**Response `200`:**
 ```json
 {
   "success": true,
-  "message": "Login successful",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "uuid",
-      "email": "user@example.com",
-      "username": "username"
-    }
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 7,
+    "email": "user@example.com",
+    "name": "John",
+    "surname": "Doe",
+    "role": "USER",
+    "permissions": ["SMART_PACKING"]
   }
 }
 ```
+
+> `permissions` is an array of feature flags (`"SMART_PACKING"` or empty) used by the frontend to conditionally show premium features.
 
 #### **POST** `/api/auth/refresh`
 Refresh JWT token (requires valid token).
@@ -936,6 +977,156 @@ Before deleting, the system finds all group trips owned by that user which have 
 
 **Error responses:** `400` (invalid ID or self-delete attempt), `401`, `403` (not admin), `404` (user not found), `500`.
 
+#### **GET** `/api/admin/users/:id/permissions`
+Returns the current permission set for a user.
+
+**Response `200`:**
+```json
+{
+  "success": true,
+  "userId": 7,
+  "permissions": ["SMART_PACKING"]
+}
+```
+
+#### **PUT** `/api/admin/users/:id/permissions`
+**Replace** the full permission set for a user (atomic: deletes existing, inserts new). Valid permission values: `"SMART_PACKING"`.
+
+**Request Body:**
+```json
+{ "permissions": ["SMART_PACKING"] }
+```
+
+Pass an empty array `[]` to revoke all permissions.
+
+**Response `200`:**
+```json
+{
+  "success": true,
+  "userId": 7,
+  "permissions": ["SMART_PACKING"]
+}
+```
+
+**Error responses:** `400` (invalid user ID, non-array body, or unknown permission name), `401`, `403` (not admin), `404` (user not found).
+
+---
+
+### Profile Endpoints
+
+All endpoints require authentication.
+
+#### **GET** `/api/profile`
+Returns the current user's profile data.
+
+**Response `200`:**
+```json
+{
+  "success": true,
+  "user": {
+    "id": 7,
+    "email": "user@example.com",
+    "name": "John",
+    "surname": "Doe",
+    "role": "USER",
+    "birthday": "1995-06-15",
+    "nationality": "Polish",
+    "createdAt": "2026-01-10T09:00:00.000Z"
+  }
+}
+```
+
+#### **PUT** `/api/profile`
+Update profile fields. Currently supports `birthday` (ISO date string or `null`) and `nationality` (string or `null`).
+
+**Request Body:**
+```json
+{
+  "birthday": "1995-06-15",
+  "nationality": "Polish"
+}
+```
+
+**Response `200`:**
+```json
+{ "success": true, "message": "Profile updated successfully" }
+```
+
+#### **PUT** `/api/profile/password`
+Change the current user's own password.
+
+**Request Body:**
+```json
+{
+  "currentPassword": "oldpass123",
+  "newPassword": "newpass456"
+}
+```
+
+---
+
+### AI Endpoints
+
+All endpoints require authentication **and** the `SMART_PACKING` permission. Returns `403` if the permission is not granted.
+
+#### **POST** `/api/ai/smart-packing`
+Generate a personalised packing list, pre-trip todo list, estimated expenses, and a trip note using OpenAI GPT.
+
+**Request Body:**
+```json
+{
+  "title": "Greece Summer",
+  "country": "Greece",
+  "dateFrom": "2026-07-01",
+  "dateTo": "2026-07-15",
+  "tripType": ["Beach", "Leisure"],
+  "budget": "€2500.00",
+  "description": "Relaxing beach holiday with some sightseeing",
+  "activities": ["Swimming", "Sightseeing"],
+  "city": "Santorini",
+  "accommodation": "Hotel",
+  "transportToDestination": ["Plane"],
+  "transportAround": ["Rental car"],
+  "groupSize": 2,
+  "specialNeeds": "vegetarian",
+  "language": "en"
+}
+```
+
+> `country`, `dateFrom`, `dateTo` are required. All other fields are optional but improve AI output quality. `language` accepts `"en"` (default) or `"pl"`.
+
+**Response `200`:**
+```json
+{
+  "success": true,
+  "data": {
+    "packingItems": [
+      { "name": "Passport", "category": "Documents", "quantity": 1, "priority": "high" },
+      { "name": "Sunscreen SPF50", "category": "Health & Medical", "quantity": 2, "priority": "high" }
+    ],
+    "todoItems": [
+      { "title": "Check visa requirements", "description": "Polish citizens do not need a visa for Greece (Schengen area)", "priority": "high", "dueDate": "2026-06-01" }
+    ],
+    "expenses": [
+      { "description": "Return flights Warsaw–Athens", "categoryName": "Transportation", "amount": 320, "currency": "EUR", "expenseDate": "2026-07-01" },
+      { "description": "Hotel (14 nights)", "categoryName": "Accommodation", "amount": 1400, "currency": "EUR", "expenseDate": "2026-07-01" }
+    ],
+    "note": "Santorini in July has hot, dry weather (25–32 °C) with strong sunlight — pack light breathable clothing and high-SPF sunscreen. Polish passport holders do not need a visa for Greece. As a vegetarian, note that traditional Greek cuisine is generally vegetarian-friendly. Must-see: Oia sunset, Akrotiri archaeological site, Amoudi Bay. No special vaccinations are required for Greece."
+  }
+}
+```
+
+**Allowed packing categories:** `Clothing`, `Toiletries`, `Electronics`, `Documents`, `Health & Medical`, `Outdoor Gear`, `Food & Snacks`, `Entertainment`, `Other`
+
+**Allowed expense categories:** `Accommodation`, `Food & Dining`, `Transportation`, `Activities & Entertainment`, `Shopping`, `Health & Medical`, `Communication`, `Other`
+
+**Error responses:**
+- `400` — missing required fields (`country`, `dateFrom`, `dateTo`)
+- `401` — not authenticated
+- `403` — user does not have `SMART_PACKING` permission
+- `429` — OpenAI rate limit exceeded
+- `500` — AI service error or invalid AI response
+
 ---
 
 ## 🔧 Environment Variables
@@ -949,7 +1140,9 @@ Before deleting, the system finds all group trips owned by that user which have 
 | `NODE_ENV` | Environment (development/production) | `development` |
 | `JWT_SECRET` | Secret key for JWT signing | **Change in production!** |
 | `JWT_EXPIRES_IN` | JWT token expiration time | `15m` |
-| `ALLOWED_ORIGINS` | CORS allowed origins | `http://localhost:5173` |
+| `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:5173,http://localhost:5174` |
+| `OPENAI_API_KEY` | OpenAI API key — required for AI Smart Packing | — |
+| `OPENAI_MODEL` | OpenAI model to use | `gpt-4o-mini` |
 
 ### Frontend (`client/.env`)
 

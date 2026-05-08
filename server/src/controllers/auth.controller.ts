@@ -23,7 +23,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Find user by email (case-insensitive)
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() }
+      where: { email: email.toLowerCase().trim() },
+      include: { permissions: { select: { permission: true } } }
     });
 
     if (!user) {
@@ -71,7 +72,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         name: user.name,
         surname: user.surname,
-        role: user.role
+        role: user.role,
+        permissions: user.permissions.map((p: { permission: string }) => p.permission)
       }
     });
   } catch (error) {
@@ -89,7 +91,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
  */
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, name, surname, password } = req.body as RegisterRequest;
+    const { email, name, surname, password, nationality, birthday } = req.body as RegisterRequest;
 
     // Validate input
     if (!email || !name || !surname || !password) {
@@ -116,14 +118,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user (no permissions by default — granted explicitly via admin panel)
     const newUser = await prisma.user.create({
       data: {
         email: email.toLowerCase().trim(),
         name: name.trim(),
         surname: surname.trim(),
         password: hashedPassword,
-        role: 'USER' // Default role
+        role: 'USER',
+        nationality: nationality?.trim() || null,
+        birthday: birthday ? new Date(birthday) : null,
       }
     });
 

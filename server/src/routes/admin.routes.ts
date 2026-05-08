@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllUsers, updateUserRole, updateUserPassword, deleteUser } from '../controllers/admin.controller';
+import { getAllUsers, updateUserRole, updateUserPassword, deleteUser, getUserPermissions, setUserPermissions } from '../controllers/admin.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/authorization.middleware';
 
@@ -178,5 +178,72 @@ router.put('/users/:id/password', updateUserPassword);
  *         description: Internal server error
  */
 router.delete('/users/:id', deleteUser);
+
+/**
+ * @swagger
+ * /api/admin/users/{id}/permissions:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get user permissions
+ *     description: Returns the list of feature-flag permissions granted to a user (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Permissions retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 userId: { type: integer }
+ *                 permissions:
+ *                   type: array
+ *                   items: { type: string, example: SMART_PACKING }
+ *       404:
+ *         description: User not found
+ *   put:
+ *     tags:
+ *       - Admin
+ *     summary: Set user permissions
+ *     description: Replaces the full permission set for a user (admin only). Valid values: SMART_PACKING
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [permissions]
+ *             properties:
+ *               permissions:
+ *                 type: array
+ *                 items: { type: string, enum: [SMART_PACKING] }
+ *                 example: [SMART_PACKING]
+ *     responses:
+ *       200:
+ *         description: Permissions updated
+ *       400:
+ *         description: Invalid permission names
+ *       404:
+ *         description: User not found
+ */
+router.get('/users/:id/permissions', getUserPermissions);
+router.put('/users/:id/permissions', setUserPermissions);
 
 export default router;

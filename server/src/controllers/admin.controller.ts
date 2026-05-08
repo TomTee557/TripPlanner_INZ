@@ -256,3 +256,105 @@ export const deleteUser = async (
     });
   }
 };
+
+// ---------------------------------------------------------------------------
+// Permissions management
+// ---------------------------------------------------------------------------
+
+// Valid feature flags
+const VALID_PERMISSIONS = ['SMART_PACKING'] as const;
+type ValidPermission = (typeof VALID_PERMISSIONS)[number];
+
+/**
+ * GET /api/admin/users/:id/permissions
+ * Return list of permissions granted to a user.
+ */
+export const getUserPermissions = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) {
+      res.status(400).json({ error: 'Invalid user ID' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { permissions: { select: { permission: true } } }
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      userId,
+      permissions: user.permissions.map((p: { permission: string }) => p.permission)
+    });
+  } catch (error) {
+    console.error('Error fetching user permissions:', error);
+    res.status(500).json({ error: 'Database error', message: 'Unable to fetch permissions.' });
+  }
+};
+
+/**
+ * PUT /api/admin/users/:id/permissions
+ * Replace the full permission set for a user.
+ * Body: { permissions: string[] }
+ */
+export const setUserPermissions = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) {
+      res.status(400).json({ error: 'Invalid user ID' });
+      return;
+    }
+
+    const { permissions } = req.body as { permissions: string[] };
+    if (!Array.isArray(permissions)) {
+      res.status(400).json({ error: 'permissions must be an array' });
+      return;
+    }
+
+    const invalid = permissions.filter(
+      (p) => !(VALID_PERMISSIONS as readonly string[]).includes(p)
+    );
+    if (invalid.length > 0) {
+      res.status(400).json({
+        error: 'Invalid permissions',
+        message: `Unknown permissions: ${invalid.join(', ')}. Valid: ${VALID_PERMISSIONS.join(', ')}`
+      });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Atomic replace: delete existing, create new
+    await prisma.$transaction([
+      prisma.userPermission.deleteMany({ where: { userId } }),
+      ...(permissions as ValidPermission[]).map((p) =>
+        prisma.userPermission.create({ data: { userId, permission: p } })
+      )
+    ]);
+
+    res.status(200).json({
+      success: true,
+      userId,
+      permissions
+    });
+  } catch (error) {
+    console.error('Error setting user permissions:', error);
+    res.status(500).json({ error: 'Database error', message: 'Unable to update permissions.' });
+  }
+};

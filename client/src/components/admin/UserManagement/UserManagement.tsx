@@ -12,11 +12,14 @@ export const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [modalType, setModalType] = useState<'role' | 'password' | 'delete' | null>(null);
+  const [modalType, setModalType] = useState<'role' | 'password' | 'delete' | 'permissions' | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [newRole, setNewRole] = useState<UserRoleType>(UserRole.USER);
   const [passwordError, setPasswordError] = useState('');
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const [permError, setPermError] = useState('');
+  const [permSaving, setPermSaving] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -43,13 +46,20 @@ export const UserManagement = () => {
     }
   };
 
-  const openModal = (user: User, type: 'role' | 'password' | 'delete') => {
+  const openModal = (user: User, type: 'role' | 'password' | 'delete' | 'permissions') => {
     setSelectedUser(user);
     setModalType(type);
     setNewRole(user.role as UserRoleType);
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
+    setPermError('');
+    if (type === 'permissions') {
+      // Fetch current permissions for this user
+      api.get<any>(`/admin/users/${user.id}/permissions`)
+        .then((data: any) => setUserPermissions(data.permissions ?? []))
+        .catch(() => setUserPermissions([]));
+    }
   };
 
   const closeModal = () => {
@@ -104,6 +114,30 @@ export const UserManagement = () => {
     }
   };
 
+  const AVAILABLE_PERMISSIONS = [
+    { key: 'SMART_PACKING', label: 'Smart Packing (AI trip planner)', description: 'Access to the AI-powered smart packing feature' },
+  ];
+
+  const togglePermission = (perm: string) => {
+    setUserPermissions((prev) =>
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+    );
+  };
+
+  const handleSavePermissions = async () => {
+    if (!selectedUser) return;
+    setPermSaving(true);
+    setPermError('');
+    try {
+      await api.put(`/admin/users/${selectedUser.id}/permissions`, { permissions: userPermissions });
+      closeModal();
+    } catch (err: any) {
+      setPermError(err?.response?.data?.message || 'Failed to update permissions.');
+    } finally {
+      setPermSaving(false);
+    }
+  };
+
   return (
     <div className="user-management">
       <h2 className="user-management__title">User Management</h2>
@@ -153,6 +187,13 @@ export const UserManagement = () => {
                         title="Change Password"
                       >
                         Password
+                      </button>
+                      <button
+                        className="user-management__action-btn user-management__action-btn--permissions"
+                        onClick={() => openModal(user, 'permissions')}
+                        title="Manage Permissions"
+                      >
+                        Permissions
                       </button>
                       <button
                         className="user-management__action-btn user-management__action-btn--delete"
@@ -267,6 +308,43 @@ export const UserManagement = () => {
           </Button>
           <Button variant="danger" onClick={handleDeleteUser}>
             Delete User
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Permissions Modal */}
+      <Modal
+        isOpen={modalType === 'permissions'}
+        onClose={closeModal}
+        title={`Permissions: ${selectedUser?.name}`}
+        size="small"
+      >
+        <div className="user-management__modal-content">
+          <p className="user-management__perm-intro">Feature flags for <strong>{selectedUser?.email}</strong>:</p>
+          <div className="user-management__perm-list">
+            {AVAILABLE_PERMISSIONS.map(({ key, label, description }) => (
+              <label key={key} className="user-management__perm-item">
+                <input
+                  type="checkbox"
+                  className="user-management__perm-checkbox"
+                  checked={userPermissions.includes(key)}
+                  onChange={() => togglePermission(key)}
+                />
+                <div className="user-management__perm-text">
+                  <span className="user-management__perm-label">{label}</span>
+                  <span className="user-management__perm-desc">{description}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+          {permError && <p className="user-management__perm-error">{permError}</p>}
+        </div>
+        <div className="user-management__modal-footer">
+          <Button variant="secondary" onClick={closeModal}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSavePermissions} loading={permSaving}>
+            Save Permissions
           </Button>
         </div>
       </Modal>

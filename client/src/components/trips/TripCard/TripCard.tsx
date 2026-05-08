@@ -4,6 +4,24 @@ import { tripTypeLabels } from '@utils/constants';
 import type { TripType } from '@utils/constants';
 import './TripCard.scss';
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  PLN: 'zł', USD: '$', EUR: '€', GBP: '£', CHF: 'CHF',
+  JPY: '¥', CAD: 'C$', AUD: 'A$', SEK: 'kr', NOK: 'kr', DKK: 'kr', CZK: 'Kč', HUF: 'Ft',
+};
+
+/** Normalize budget strings like "EUR5000.00" → "€5000.00", "USD200" → "$200" */
+function formatBudget(raw: string): string {
+  // If it already starts with a recognised symbol, leave it
+  if (/^[€$£¥zł]|^CHF|^C\$|^A\$|^kr|^Kč|^Ft/.test(raw)) return raw;
+  // Try to strip leading 3-letter currency code
+  const match = raw.match(/^([A-Z]{2,3})(.+)$/);
+  if (match) {
+    const symbol = CURRENCY_SYMBOLS[match[1]];
+    if (symbol) return `${symbol}${match[2]}`;
+  }
+  return raw;
+}
+
 interface TripCardProps {
   trip: Trip;
   onEdit?: (trip: Trip) => void;
@@ -61,7 +79,7 @@ export const TripCard = ({ trip, onEdit, onDelete, onViewExpenses, onViewPacking
         
         <div className="trip-card__info">
           <span className="trip-card__days">{days} days</span>
-          <span className="trip-card__price">{trip.budget || (trip.price ? formatCurrency(trip.price) : '')}</span>
+          <span className="trip-card__price">{trip.budget ? formatBudget(trip.budget) : (trip.price ? formatCurrency(trip.price) : '')}</span>
         </div>
         
         {trip.description && (

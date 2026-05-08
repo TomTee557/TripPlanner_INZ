@@ -11,8 +11,14 @@ interface AuthState {
   successMessage: string | null;
 }
 
+const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+// Fallback for sessions stored before permissions were introduced
+if (storedUser && !storedUser.permissions) {
+  storedUser.permissions = [];
+}
+
 const initialState: AuthState = {
-  user: JSON.parse(localStorage.getItem('user') || 'null'),
+  user: storedUser,
   token: localStorage.getItem('authToken'),
   isAuthenticated: !!localStorage.getItem('authToken'),
   loading: false,

@@ -1,4 +1,6 @@
 // User types
+export type UserPermission = 'SMART_PACKING';
+
 export interface User {
   id: number;
   email: string;
@@ -6,6 +8,7 @@ export interface User {
   surname: string;
   role: 'USER' | 'ADMIN';
   createdAt: string;
+  permissions: UserPermission[];
 }
 
 // Auth types
@@ -19,6 +22,8 @@ export interface RegisterData {
   password: string;
   name: string;
   surname: string;
+  nationality?: string;
+  birthday?: string;
 }
 
 export interface AuthResponse {
@@ -235,6 +240,62 @@ export interface ApiSuccessResponse<T = any> {
   message?: string;
 }
 
+// ─── Smart Pack / AI types ──────────────────────────────────────────────────
+
+export interface SmartPackFormSnapshot {
+  title: string;
+  country: string;
+  dateFrom: string;
+  dateTo: string;
+  price: string;
+  budgetCurrency: string;
+  tripType: string;
+  picture: string;
+  description: string;
+  tags: string;
+  participantIds?: number[];
+}
+
+export interface SmartPackContext {
+  activities: string[];
+  customActivity: string;
+  city: string;
+  accommodation: string;
+  transportToDestination: string[];
+  transportAround: string[];
+  groupSize: number;
+  specialNeeds: string;
+}
+
+export interface SmartPackAiPackingItem {
+  name: string;
+  category: string;
+  quantity: number;
+  priority: 'low' | 'medium' | 'high';
+}
+
+export interface SmartPackAiTodoItem {
+  title: string;
+  description?: string;
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: string;
+}
+
+export interface SmartPackAiExpenseItem {
+  description: string;
+  categoryName: string;
+  amount: number;
+  currency: string;
+  expenseDate: string;
+}
+
+export interface SmartPackAiResponse {
+  packingItems: SmartPackAiPackingItem[];
+  todoItems: SmartPackAiTodoItem[];
+  expenses: SmartPackAiExpenseItem[];
+  note: string;
+}
+
 // Profile types
 export interface UserProfile {
   id: number;
@@ -243,6 +304,7 @@ export interface UserProfile {
   email: string;
   role: 'USER' | 'ADMIN';
   birthday: string | null;
+  nationality: string | null;
   createdAt: string;
 }
 

@@ -16,6 +16,8 @@ const AuthPage = () => {
     password: '',
     name: '',
     surname: '',
+    nationality: '',
+    dateOfBirth: '',
   });
 
   // Redirect if already authenticated
@@ -46,6 +48,8 @@ const AuthPage = () => {
         password: formData.password,
         name: formData.name,
         surname: formData.surname,
+        nationality: formData.nationality || undefined,
+        birthday: formData.dateOfBirth || undefined,
       }));
     }
   };
@@ -90,6 +94,27 @@ const AuthPage = () => {
                     value={formData.surname}
                     onChange={handleChange}
                     required={!isLogin}
+                  />
+
+                  <label htmlFor="nationality" className="auth__label">Nationality:</label>
+                  <input
+                    type="text"
+                    id="nationality"
+                    name="nationality"
+                    className="auth__input"
+                    placeholder="e.g. Polish, German, British"
+                    value={formData.nationality}
+                    onChange={handleChange}
+                  />
+
+                  <label htmlFor="dateOfBirth" className="auth__label">Date of birth:</label>
+                  <input
+                    type="date"
+                    id="dateOfBirth"
+                    name="dateOfBirth"
+                    className="auth__input"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
                   />
                 </>
               )}

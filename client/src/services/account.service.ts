@@ -14,7 +14,7 @@ import type {
 export const getProfile = () =>
   api.get<ApiSuccessResponse<UserProfile>>('/profile');
 
-export const updateProfile = (data: { birthday: string | null }) =>
+export const updateProfile = (data: { birthday?: string | null; nationality?: string | null }) =>
   api.put<ApiSuccessResponse>('/profile', data);
 
 export const changePassword = (data: { currentPassword: string; newPassword: string }) =>

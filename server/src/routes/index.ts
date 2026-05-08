@@ -11,6 +11,7 @@ import documentsRoutes from './documents.routes';
 import invitationsRoutes from './invitations.routes';
 import notificationsRoutes from './notifications.routes';
 import commentsRoutes from './comments.routes';
+import aiRoutes from './ai.routes';
 
 const router = Router();
 
@@ -49,6 +50,9 @@ router.use('/notifications', notificationsRoutes);
 
 // Comments routes: /api/trips/:tripId/comments/*
 router.use('/', commentsRoutes);
+
+// AI routes: /api/ai/*
+router.use('/ai', aiRoutes);
 
 // Health check endpoint
 router.get('/health', (_req, res) => {

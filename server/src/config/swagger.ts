@@ -268,6 +268,42 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        AiPackingItem: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', example: 'Passport' },
+            category: {
+              type: 'string',
+              enum: ['Clothing', 'Toiletries', 'Electronics', 'Documents', 'Medicine', 'Accessories', 'Sports & Recreation', 'Other'],
+              example: 'Documents',
+            },
+            quantity: { type: 'integer', example: 1 },
+            priority: { type: 'string', enum: ['low', 'medium', 'high'], example: 'high' },
+          },
+        },
+        AiTodoItem: {
+          type: 'object',
+          properties: {
+            title: { type: 'string', example: 'Book flight tickets' },
+            description: { type: 'string', example: 'Check cheapest options on Skyscanner' },
+            priority: { type: 'string', enum: ['low', 'medium', 'high'], example: 'high' },
+            dueDate: { type: 'string', format: 'date', nullable: true, example: '2025-06-01' },
+          },
+        },
+        AiExpenseItem: {
+          type: 'object',
+          properties: {
+            description: { type: 'string', example: 'Accommodation 10 nights' },
+            categoryName: {
+              type: 'string',
+              enum: ['Accommodation', 'Transportation', 'Food & Dining', 'Activities', 'Shopping', 'Healthcare', 'Entertainment', 'Other'],
+              example: 'Accommodation',
+            },
+            amount: { type: 'number', example: 1200 },
+            currency: { type: 'string', example: 'EUR' },
+            expenseDate: { type: 'string', format: 'date', example: '2025-07-10' },
+          },
+        },
         TripParticipant: {
           type: 'object',
           description: 'A single invitation record linking a user to a trip',

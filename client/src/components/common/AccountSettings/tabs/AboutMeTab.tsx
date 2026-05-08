@@ -6,6 +6,7 @@ export const AboutMeTab = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [birthday, setBirthday] = useState('');
+  const [nationality, setNationality] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -17,6 +18,7 @@ export const AboutMeTab = () => {
         if (res.data) {
           setProfile(res.data);
           setBirthday(res.data.birthday || '');
+          setNationality(res.data.nationality || '');
         }
       } catch {
         setError('Failed to load profile');
@@ -27,18 +29,18 @@ export const AboutMeTab = () => {
     fetch();
   }, []);
 
-  const handleSaveBirthday = async () => {
+  const handleSave = async () => {
     setSaving(true);
     setError('');
     setSuccessMsg('');
     try {
-      await updateProfile({ birthday: birthday || null });
-      setSuccessMsg('Birthday updated successfully');
+      await updateProfile({ birthday: birthday || null, nationality: nationality.trim() || null });
+      setSuccessMsg('Profile updated successfully');
       if (profile) {
-        setProfile({ ...profile, birthday: birthday || null });
+        setProfile({ ...profile, birthday: birthday || null, nationality: nationality.trim() || null });
       }
     } catch {
-      setError('Failed to update birthday');
+      setError('Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -83,14 +85,29 @@ export const AboutMeTab = () => {
               value={birthday}
               onChange={(e) => setBirthday(e.target.value)}
             />
-            <button
-              className="about-tab__save-btn"
-              onClick={handleSaveBirthday}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
           </div>
+        </div>
+        <div className="about-tab__row about-tab__row--editable">
+          <span className="about-tab__label">Nationality</span>
+          <div className="about-tab__birthday-edit">
+            <input
+              className="about-tab__input"
+              type="text"
+              placeholder="e.g. Polish, German, British"
+              value={nationality}
+              onChange={(e) => setNationality(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="about-tab__row">
+          <span className="about-tab__label" />
+          <button
+            className="about-tab__save-btn"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save changes'}
+          </button>
         </div>
       </div>
 

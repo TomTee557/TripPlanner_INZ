@@ -26,6 +26,7 @@ export const getProfile = async (
         email: true,
         role: true,
         birthday: true,
+        nationality: true,
         createdAt: true
       }
     });
@@ -40,6 +41,7 @@ export const getProfile = async (
       data: {
         ...user,
         birthday: user.birthday ? user.birthday.toISOString().split('T')[0] : null,
+        nationality: user.nationality ?? null,
         createdAt: user.createdAt.toISOString()
       }
     });
@@ -63,12 +65,13 @@ export const updateProfile = async (
       return;
     }
 
-    const { birthday } = req.body;
+    const { birthday, nationality } = req.body;
 
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
-        birthday: birthday ? new Date(birthday) : null
+        birthday: birthday ? new Date(birthday) : null,
+        nationality: nationality !== undefined ? (nationality || null) : undefined,
       }
     });
 

@@ -326,6 +326,25 @@ CREATE TABLE IF NOT EXISTS todo_items (
 CREATE INDEX IF NOT EXISTS idx_todo_items_trip_id ON todo_items(trip_id);
 
 -- =============================================================================
+-- USER PERMISSIONS (feature flags)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS user_permissions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    permission VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_permission UNIQUE (user_id, permission)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id);
+
+-- Grant SMART_PACKING to all existing non-admin users as default rollout
+-- (in production only grant explicitly per user via admin UI)
+INSERT INTO user_permissions (user_id, permission)
+SELECT id, 'SMART_PACKING' FROM users WHERE role = 'USER'
+ON CONFLICT DO NOTHING;
+
+-- =============================================================================
 -- SAMPLE DATA - EXPENSES
 -- =============================================================================
 -- Expenses for "My Taiwan" trip (admin)

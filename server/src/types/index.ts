@@ -40,6 +40,8 @@ export interface RegisterRequest {
   name: string;
   surname: string;
   password: string;
+  nationality?: string;
+  birthday?: string;
 }
 
 /**

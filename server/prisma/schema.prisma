@@ -16,9 +16,10 @@ model User {
   surname   String   @db.VarChar(100)
   email     String   @unique @db.VarChar(255)
   password  String   @db.VarChar(255)
-  role      String   @default("USER") @db.VarChar(20)
-  birthday  DateTime? @db.Date
-  createdAt DateTime @default(now()) @map("created_at")
+  role        String   @default("USER") @db.VarChar(20)
+  birthday    DateTime? @db.Date
+  nationality String?  @db.VarChar(100)
+  createdAt   DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   
   // Relations
@@ -30,9 +31,24 @@ model User {
   documents      UserDocument[]
   notifications  Notification[]
   tripComments   TripComment[]
+  permissions    UserPermission[]
   
   @@map("users")
   @@index([email])
+}
+
+model UserPermission {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  permission String   @db.VarChar(100)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permission])
+  @@map("user_permissions")
+  @@index([userId])
 }
 
 model Trip {

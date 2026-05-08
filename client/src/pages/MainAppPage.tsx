@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchTripsRequest, createTripRequest, updateTripRequest, deleteTripRequest } from '@store/slices/tripsSlice';
 import { logout } from '@store/slices/authSlice';
 import type { RootState } from '@store';
-import type { Trip, CreateTripData, UpdateTripData, TripFilters } from '@types';
+import type { Trip, CreateTripData, UpdateTripData, TripFilters, SmartPackFormSnapshot } from '@types';
 import { Header } from '@components/layout/Header/Header';
 import { SearchPanel } from '@components/layout/SearchPanel/SearchPanel';
 import { TripList } from '@components/trips/TripList/TripList';
@@ -18,6 +18,7 @@ import { TodoList } from '@components/trips/TodoList/TodoList';
 import { ParticipantsList } from '@components/trips/ParticipantsList/ParticipantsList';
 import { TransferOwnerDialog } from '@components/trips/TransferOwnerDialog/TransferOwnerDialog';
 import { BudgetOverview } from '@components/trips/BudgetOverview/BudgetOverview';
+import { SmartPackModal } from '@components/common/SmartPackModal/SmartPackModal';
 import { getNotificationCount, getExpiringSoon } from '@services/account.service';
 import api from '@services/api';
 import '@styles/mainApp.scss';
@@ -40,6 +41,8 @@ const MainAppPage = () => {
   const [isTodosModalOpen, setIsTodosModalOpen] = useState(false);
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
+  const [isSmartPackOpen, setIsSmartPackOpen] = useState(false);
+  const [smartPackFormData, setSmartPackFormData] = useState<SmartPackFormSnapshot | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [tripToDelete, setTripToDelete] = useState<string | null>(null);
   const [filters, setFilters] = useState<TripFilters>({});
@@ -98,6 +101,22 @@ const MainAppPage = () => {
   const handleAddTrip = (data: CreateTripData | UpdateTripData) => {
     dispatch(createTripRequest(data as CreateTripData));
     setIsAddTripModalOpen(false);
+  };
+
+  const handleOpenSmartPack = (snapshot: SmartPackFormSnapshot) => {
+    setSmartPackFormData(snapshot);
+    setIsSmartPackOpen(true);
+  };
+
+  const handleSmartPackSuccess = () => {
+    setIsSmartPackOpen(false);
+    setSmartPackFormData(null);
+    setIsAddTripModalOpen(false);
+  };
+
+  const handleSmartPackCancel = () => {
+    setIsSmartPackOpen(false);
+    setSmartPackFormData(null);
   };
 
   const handleEditTrip = (data: CreateTripData | UpdateTripData) => {
@@ -394,7 +413,12 @@ const MainAppPage = () => {
         size="large"
         closeOnOverlayClick={false}
       >
-        <TripForm onSubmit={handleAddTrip} onCancel={() => setIsAddTripModalOpen(false)} />
+        <TripForm
+          onSubmit={handleAddTrip}
+          onCancel={() => setIsAddTripModalOpen(false)}
+          hasSmartPackPermission={user?.permissions?.includes('SMART_PACKING') ?? false}
+          onOpenSmartPack={handleOpenSmartPack}
+        />
       </Modal>
 
       {/* Edit Trip Modal */}
@@ -444,6 +468,23 @@ const MainAppPage = () => {
           closeOnOverlayClick={false}
         >
           <UserManagement />
+        </Modal>
+      )}
+
+      {/* Smart Pack Modal */}
+      {isSmartPackOpen && smartPackFormData && (
+        <Modal
+          isOpen={isSmartPackOpen}
+          onClose={handleSmartPackCancel}
+          title="✨ Smart Pack — AI Trip Planner"
+          size="large"
+          closeOnOverlayClick={false}
+        >
+          <SmartPackModal
+            tripFormData={smartPackFormData}
+            onSuccess={handleSmartPackSuccess}
+            onCancel={handleSmartPackCancel}
+          />
         </Modal>
       )}
 

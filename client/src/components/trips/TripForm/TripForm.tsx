@@ -8,7 +8,7 @@ import { CurrencyConverter } from '@components/common/CurrencyConverter';
 import { ParticipantSearch } from '@components/trips/ParticipantSearch/ParticipantSearch';
 import { formatDateToInput } from '@utils/helpers';
 import { tripTypeLabels, availablePictures } from '@utils/constants';
-import type { Trip, CreateTripData, UpdateTripData, TripComment } from '@types';
+import type { Trip, CreateTripData, UpdateTripData, TripComment, SmartPackFormSnapshot } from '@types';
 import type { PictureKey } from '@utils/constants';
 import { getComments, addComment, deleteComment } from '@services/comments.service';
 import './TripForm.scss';
@@ -56,9 +56,11 @@ interface TripFormProps {
   loading?: boolean;
   readOnly?: boolean;
   currentUserId?: number;
+  hasSmartPackPermission?: boolean;
+  onOpenSmartPack?: (snapshot: SmartPackFormSnapshot) => void;
 }
 
-export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = false, readOnly = false, currentUserId }: TripFormProps) => {
+export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = false, readOnly = false, currentUserId, hasSmartPackPermission = false, onOpenSmartPack }: TripFormProps) => {
   const isEditMode = !!trip;
   const tripId = trip?.id;
   
@@ -76,6 +78,7 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [smartPackError, setSmartPackError] = useState('');
   const [showPictureModal, setShowPictureModal] = useState(false);
   const [showCurrencyConverter, setShowCurrencyConverter] = useState(false);
   const [showParticipantSearch, setShowParticipantSearch] = useState(false);
@@ -424,6 +427,46 @@ export const TripForm = ({ initialData: trip, onSubmit, onCancel, loading = fals
           <Button type="button" variant="secondary" onClick={onCancel}>
             {readOnly ? 'Close' : 'Cancel'}
           </Button>
+          {!readOnly && !isEditMode && hasSmartPackPermission && onOpenSmartPack && (
+            <div className="trip-form__smart-pack-wrapper">
+              {smartPackError && (
+                <span className="trip-form__smart-pack-error">{smartPackError}</span>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const missing: string[] = [];
+                  if (!formData.title.trim()) missing.push('Title');
+                  if (!formData.country.trim()) missing.push('Country');
+                  if (!formData.dateFrom) missing.push('Date From');
+                  if (!formData.dateTo) missing.push('Date To');
+                  if (!formData.price || parseFloat(formData.price) <= 0) missing.push('Budget');
+                  if (!formData.tripType) missing.push('Trip Type');
+                  if (missing.length > 0) {
+                    setSmartPackError(`Please fill in: ${missing.join(', ')}`);
+                    return;
+                  }
+                  setSmartPackError('');
+                  onOpenSmartPack({
+                    title: formData.title,
+                    country: formData.country,
+                    dateFrom: formData.dateFrom,
+                    dateTo: formData.dateTo,
+                    price: formData.price,
+                    budgetCurrency: formData.budgetCurrency,
+                    tripType: formData.tripType,
+                    picture: formData.picture || '/mountains.jpg',
+                    description: formData.description,
+                    tags: formData.tags,
+                    participantIds: participants.map((p) => p.id),
+                  });
+                }}
+              >
+                ✨ Smart Pack
+              </Button>
+            </div>
+          )}
           {!readOnly && (
             <Button type="submit" variant="primary" loading={loading}>
               {isEditMode ? 'Update Trip' : 'Create Trip'}
