@@ -27,6 +27,8 @@ const options: swaggerJsdoc.Options = {
           '- Budget Overview: single-request `GET /api/trips/budget-summary` returns all trips with expenses for pie chart + progress bars',
           '- Multi-currency budget: budget stored as symbol+amount string (e.g. `€600.00`, `$1200.00`); live conversion via NBP API',
           '- JWT token expiry 15 min with refresh endpoint',
+          '- HTTP security headers via Helmet (CSP, X-Frame-Options, HSTS, etc.)',
+          '- Rate limiting on `/api/auth/login` and `/api/auth/register`: 10 failed attempts per 15-minute window per IP (successful requests are not counted)',
         ].join('\n'),
       contact: {
         name: 'API Support',

@@ -11,7 +11,7 @@ const router = Router();
  *     tags:
  *       - Authentication
  *     summary: Register a new user
- *     description: Create a new user account with email, username, and password
+ *     description: Create a new user account. Password must be at least 6 characters. Rate-limited to 10 failed attempts per 15-minute window per IP.
  *     requestBody:
  *       required: true
  *       content:
@@ -20,28 +20,32 @@ const router = Router();
  *             type: object
  *             required:
  *               - email
- *               - username
+ *               - name
+ *               - surname
  *               - password
- *               - firstName
- *               - lastName
  *             properties:
  *               email:
  *                 type: string
  *                 format: email
  *                 example: user@example.com
- *               username:
+ *               name:
  *                 type: string
- *                 example: johndoe
+ *                 example: John
+ *               surname:
+ *                 type: string
+ *                 example: Doe
  *               password:
  *                 type: string
  *                 format: password
+ *                 minLength: 6
  *                 example: SecurePassword123
- *               firstName:
+ *               nationality:
  *                 type: string
- *                 example: John
- *               lastName:
+ *                 example: Polish
+ *               birthday:
  *                 type: string
- *                 example: Doe
+ *                 format: date
+ *                 example: '1995-06-15'
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -55,19 +59,39 @@ const router = Router();
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: User registered successfully
- *                 data:
+ *                   example: Account created successfully
+ *                 user:
  *                   type: object
  *                   properties:
- *                     token:
+ *                     id:
+ *                       type: integer
+ *                       example: 7
+ *                     email:
  *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                     user:
- *                       $ref: '#/components/schemas/User'
+ *                       example: user@example.com
+ *                     name:
+ *                       type: string
+ *                       example: John
+ *                     surname:
+ *                       type: string
+ *                       example: Doe
  *       400:
- *         description: Bad request - Invalid input data
+ *         description: Bad request - Missing or invalid fields (including password shorter than 6 characters)
  *       409:
- *         description: Conflict - User already exists
+ *         description: Conflict - An account with this email already exists
+ *       429:
+ *         description: Too Many Requests - Rate limit exceeded (10 failed attempts per 15 minutes per IP)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests
+ *                 message:
+ *                   type: string
+ *                   example: Too many failed attempts, please try again in 15 minutes
  *       500:
  *         description: Internal server error
  */
@@ -122,9 +146,22 @@ router.post('/register', register);
  *                     user:
  *                       $ref: '#/components/schemas/User'
  *       400:
- *         description: Bad request - Invalid credentials
+ *         description: Bad request - Missing email or password
  *       401:
  *         description: Unauthorized - Invalid email or password
+ *       429:
+ *         description: Too Many Requests - Rate limit exceeded (10 failed attempts per 15 minutes per IP)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests
+ *                 message:
+ *                   type: string
+ *                   example: Too many failed attempts, please try again in 15 minutes
  *       500:
  *         description: Internal server error
  */

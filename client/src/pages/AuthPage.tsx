@@ -19,6 +19,7 @@ const AuthPage = () => {
     nationality: '',
     dateOfBirth: '',
   });
+  const [passwordError, setPasswordError] = useState('');
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -37,6 +38,12 @@ const AuthPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isLogin && formData.password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return;
+    }
+    setPasswordError('');
+
     if (isLogin) {
       dispatch(loginRequest({
         email: formData.email,
@@ -139,7 +146,11 @@ const AuthPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                minLength={!isLogin ? 6 : undefined}
               />
+              {passwordError && (
+                <p className="auth__message auth__message--error">{passwordError}</p>
+              )}
               
               <button 
                 type="submit" 

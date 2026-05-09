@@ -50,6 +50,9 @@ Modern web application for comprehensive trip planning with budget tracking, pac
 - **JWT Token Management** - Stateless authentication with 15-minute token expiration
 - **Automatic Session Refresh** - Smart session timer with 30-second warning before expiration
 - **Protected Routes** - Frontend and backend route protection with automatic redirect to login
+- **HTTP Security Headers (Helmet)** - Express `helmet` middleware sets security-relevant response headers on every request: `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Referrer-Policy`, and others — protecting against clickjacking, MIME-type sniffing, and XSS injection
+- **Rate Limiting** - Login and registration endpoints are limited to **10 failed attempts per 15-minute window per IP** via `express-rate-limit`. Successful requests (`2xx`) are not counted. After the limit is reached the server responds with HTTP **429** and a human-readable message: `"Too many failed attempts, please try again in 15 minutes"`
+- **Password Validation** - Registration enforces a minimum password length of **6 characters**, validated on both the frontend (inline error under the password field before the request is sent) and the backend (400 response if not met)
 - **Self-Service Account Deletion** - Users can delete their own account from the Settings tab (Danger Zone section). Blocked with a clear error message if the user owns any group trips with accepted participants. On success all owned solo trips, expenses/comments in other trips, participant records, documents, and notifications are removed via Prisma CASCADE.
 - **Admin-Forced Account Deletion** - Admin panel can delete any user; the system automatically transfers ownership of group trips (earliest accepted participant becomes the new owner and is removed from participants list) before the account is removed
 
@@ -222,6 +225,14 @@ JSON Web Token implementation for authentication.
 #### **bcrypt 5.1**
 Password hashing library.
 - **Why:** Industry-standard for password hashing, built-in salt generation, adjustable computational cost, protects against rainbow table attacks, and prevents timing attacks.
+
+#### **Helmet 8.x**
+Express middleware for setting HTTP security headers.
+- **Why:** Automatically adds headers such as `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, and `Strict-Transport-Security` to protect the API against common web vulnerabilities (clickjacking, MIME-type sniffing, XSS) with a single `app.use(helmet())` call.
+
+#### **express-rate-limit 7.x**
+Rate-limiting middleware for Express.
+- **Why:** Protects authentication endpoints against brute-force and credential-stuffing attacks by limiting the number of failed requests per IP. Only failed requests count toward the limit (`skipSuccessfulRequests: true`), avoiding false positives for legitimate users.
 
 ### Infrastructure & DevOps
 
@@ -557,7 +568,7 @@ Register a new user.
 }
 ```
 
-> `nationality` and `birthday` are optional. New accounts start with **no permissions** — `SMART_PACKING` must be granted explicitly by an admin.
+> `nationality` and `birthday` are optional. `password` must be at least **6 characters**. New accounts start with **no permissions** — `SMART_PACKING` must be granted explicitly by an admin.
 
 **Response `201`:**
 ```json
@@ -571,6 +582,11 @@ Register a new user.
     "surname": "Doe"
   }
 }
+```
+
+**Response `429` — rate limit exceeded:**
+```json
+{ "error": "Too many requests", "message": "Too many failed attempts, please try again in 15 minutes" }
 ```
 
 #### **POST** `/api/auth/login`
@@ -601,6 +617,13 @@ Authenticate user and receive JWT token.
 ```
 
 > `permissions` is an array of feature flags (`"SMART_PACKING"` or empty) used by the frontend to conditionally show premium features.
+
+**Response `429` — rate limit exceeded:**
+```json
+{ "error": "Too many requests", "message": "Too many failed attempts, please try again in 15 minutes" }
+```
+
+> The rate limiter allows **10 failed attempts per 15 minutes per IP**. Successful logins (`200`) are not counted toward the limit.
 
 #### **POST** `/api/auth/refresh`
 Refresh JWT token (requires valid token).
